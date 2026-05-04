@@ -1,0 +1,220 @@
+date:
+  arc_start:
+  - 27394
+  - 18
+  arc_stop:
+  - 27394
+  - 86390.0
+model:
+  environment:
+    albedo_ir: unused
+    apriori_parameters: EXE_PPP/valap_static
+    atmospheric_pressure: unused
+    atmospheric_tides: unused
+    earth_orientation_parameters: pole/nominal_NRO
+    external_attitude: attitude/G20/defaut
+    gnss_antenna: ANTEX/defaut
+    gnss_clock: horloges/G20/defaut
+    gnss_preprocessing_options: /root/spotgins/metadata/directeur/options_prairie_static
+    gravity: unused
+    inverse_barometer: unused
+    ionex_files: ionosphere/igs/defaut
+    macromodel: macromod/gnss.xml
+    mean_sea_surface: unused
+    natural_satellite: unused
+    ocean_pole_tide: unused
+    ocean_tides: unused
+    planet_ephemerides: lunisolaires/de440bdlf.ad
+    solar_activity: unused
+    temporal_nutation: unused
+    thermosphere: unused
+    trigonometric_nutation: unused
+  mean_pole:
+    compute_c21_s21_from: potential_model
+    iers_model: 2018.0
+object:
+  constellation:
+  - force:
+      accelerometer_attitude_thrust: not_computed
+      atmospheric_drag: not_computed
+      gravity_field_maximum_degree: not_computed
+      gravity_from_atmospheric_pressure_variations: not_computed
+      gravity_from_ocean_tides: not_computed
+      gravity_from_sun_and_planet: not_computed
+      integration_reference_frame: inertial_j2000
+      relativistic_acceleration: not_computed
+      satellite_emission: not_computed
+      solar_pressure: not_computed
+      solid_tide: iers_2010_conventions
+      thermospheric_wind: no
+    gnss_center_of_mass:
+    - corrected
+    - corrected
+    - corrected
+    - corrected
+    name: GNSS_GPS
+  station:
+    atmosphere_loading: unused
+    center_of_mass_correction: unused
+    ocean_pole_tide_loading: maree_polaire/loading/nominal
+    ocean_tide_loading: .temp.gin/TMP_GYNS/20260504T110335_SPOTGINS_ALBH00CAN_2025_001_27394__/load_fes2014b_cf.spotgins
+    station_coordinates: .temp.gin/TMP_GYNS/20260504T110335_SPOTGINS_ALBH00CAN_2025_001_27394__/station_file.dat
+observation:
+  interobject_data:
+  - bodyfixed_ephemerides: yes
+    file: orbites/G20/defaut
+    name: GNSS_ephemeris
+    objects:
+    - GNSS_GPS
+    - unknown
+    type: fixed_ephemeris
+  - apriori_model_stddev: 5.0
+    apriori_obs_stddev: 0.05
+    code_nsigma_threshold: 5
+    code_rms_threshold_after_iter_max: 0
+    file: .temp.gin/TMP_GYNS/20260504T110335_SPOTGINS_ALBH00CAN_2025_001_27394__/ALBH00CAN_R_20250010000_01D_30S_MO.rnx
+    gal_code_ponderation_law:
+    - 0.6
+    - 0.15
+    - 1.0
+    gal_phase_ponderation_law:
+    - 0.0035
+    - 0.15
+    - 1.0
+    gnss_antenna_corrections:
+      alternative_frequencies: no
+      libantex: yes
+      unavailable_map: elim
+    gnss_options:
+      clock_parameters_globally_solved: no
+      phase_observations_process: yes
+    gps_code_ponderation_law:
+    - 0.6
+    - 0.15
+    - 1.0
+    gps_phase_ponderation_law:
+    - 0.0035
+    - 0.15
+    - 1.0
+    max_iter_gps_removal: 5
+    min_elevation_phase: 8
+    min_elevation_range: 8
+    minimum_number_observations_per_pass: 5
+    name: GNSS_measurement
+    nb_adjusted_biases_per_day_per_station: 24
+    objects:
+    - GNSS_GPS
+    - station
+    observation_options:
+    - initialize_from_clock_file
+    - constellation_as_time_reference
+    phase_nsigma_threshold: 5
+    phase_rms_threshold_after_iter_max: 0
+    tropospheric_correction:
+    - wet
+    - vmf1
+    - vmf1
+    type: undifferentiated_gnss
+  removal:
+    data_sampling: 300
+    first_iteration_residual_threshold: 0
+    minimum_elevation_threshold: 0
+    minimum_gnss_data_per_pass: 5
+    nsigma_threshold: 5
+output:
+  archiving:
+    measurement_file_update: no
+    non_gravitational_forces: no
+    normal_equation: no
+    observation_matrix: no
+    orbit: no
+    statistic_file: no
+  edition:
+    measurement_residuals_print: no
+    normal_matrix_print: no
+    parameters_print: no
+    residuals_station_print: no
+parameter:
+  adjustment_parameters:
+    stations:
+      adjustment_frequency:
+      - 1
+      - 0
+      - 0
+      - 0
+      adjustment_type:
+      - geodetic_marker
+      - all_stations
+      coordinates: cartesian_xyz
+      geocenter: not_adjusted
+      label_output: middle_of_period
+      velocity: not_adjusted
+  algorithm:
+    allow_elim_at_convergence: yes
+    convergence_criterion: 0.1
+    nb_iter_min_max:
+    - 3
+    - 20
+  constellation:
+  - albedo_ir:
+      adjustment_type: not_adjusted
+    bias:
+      n_bias:
+      - none
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      r_bias:
+      - none
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      t_bias:
+      - none
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      x_bias:
+      - none
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      y_bias:
+      - none
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      z_bias:
+      - none
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+    direct_solar_pressure:
+      adjustment_type: not_adjusted
+    integration:
+      encke_technique: 0
+      integration_algorithm: none
+      integration_order: 0
+      integration_stepsize: 0.0
+      low_inclination_formalism: normal
+      regularization: not_regularized
+    name: GNSS_GPS
+    thermal_reemission:
+      adjustment_type: not_adjusted
+user_extension:
+  userext_addition:
+  - GPS__HAUTE_FREQ ALBH00CAN
+  - GPS__AFF_SINEX
+  - LGAIN PPP
+  - GALILEO
+  - GPS__QUALITEORB 0.037
+  - ADMIT_OCELOAD
+  - GRADIENTS_TROPO 2
+  - ADD_TROPO_IN_SOLUTION
+  - GPS__AFF_SINEX
