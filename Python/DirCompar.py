@@ -85,7 +85,7 @@ def Rapport(f1,f2,noms):
     
     
     
-    with open ("../Rapport.txt","w") as f:
+    with open ("../ComparTable.txt","w") as f:
         
         maxi, maxi2 = maximum(df_diff)
         
