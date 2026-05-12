@@ -61,15 +61,61 @@ def diff(f1,f2,noms):
     diff.drop(drop, inplace=True)
     return diff
 
-if __name__ == "__main__":
+def maximum(df):
+    
+    maxi = 1
+    maxi2 = 1
+    for index,row in df.iterrows():
+        if len(row[0]) > maxi:
+            maxi = len(row[0])
+        if len(row[1]) > maxi2:
+            maxi2 = len(row[1])
+    return maxi,maxi2
+    
+    
 
-    shom_directeur = convert("ALBH00CAN_R_20250010000_01D_30S_MO.rnx.yml")
-    singugins_directeur = convert("directeur.yml")
-    modele = convert('DIR_SPOTGINS_G20_GE_VALIDE_25_2.yml')
-
-    missing_shom,missing_singugins = missing(shom_directeur, singugins_directeur)
+def Rapport(f1,f2,noms):
+    
+    #Ouverture des fichiers directeurs
+    shom_directeur = convert(f1)
+    singugins_directeur = convert(f2)
+    #Recherche des différences entre fichiers
+    missing_shom,missing_singugins = missing(singugins_directeur, shom_directeur)
     df_diff = diff(shom_directeur, singugins_directeur,["Shom","Singugins"])
     
-    verif_singu = diff(modele,singugins_directeur,["modele","singugins"])
+    
+    
+    with open ("../Rapport.txt","w") as f:
+        
+        maxi, maxi2 = maximum(df_diff)
+        
+        f.write("="*80 + f" COMPARAISON DES FICHIERS DIRECTEURS: {noms[0]} et {noms[1]} " + "="*80)
+        f.write("\n"*2 + "="*20 + " Différences entre paramètres communs " + "="*150 + "\n")
+        for index,row in df_diff.iterrows():
+            f.write("\n" + row[0] + " "*(maxi+2-len(row[0]))+ "|  " + row[1] + " "*(maxi2+2-len(row[1])) + "| " + row[2])
+            
+        maxi, maxi2 = maximum(missing_shom)
+        f.write("\n"*2 + "="*20 + f" Paramètres manquants dans le fichier {noms[0]} " + "="*150 + "\n")
+        for index,row in missing_shom.iterrows():
+            f.write("\n" + row[0] + " "*(maxi+2-len(row[0]))+ "|  " + row[1])
+            
+        maxi, maxi2 = maximum(missing_singugins)
+        f.write("\n"*2 + "="*20 + f" Paramètres manquants dans le fichier {noms[1]} " + "="*150 + "\n")
+        for index,row in missing_singugins.iterrows():
+            f.write("\n" + row[0] + " "*(maxi+2-len(row[0]))+ "|  " + row[1])
+            
+            
+if __name__ == "__main__":
+
+    # shom_directeur = convert("../ALBH00CAN_R_20250010000_01D_30S_MO.rnx.yml")
+    # singugins_directeur = convert("../directeur.yml")
+    # modele = convert('../DIR_SPOTGINS_G20_GE_VALIDE_25_2.yml')
+
+    # missing_shom,missing_singugins = missing(shom_directeur, singugins_directeur)
+    # df_diff = diff(shom_directeur, singugins_directeur,["Shom","Singugins"])
+    
+    # verif_singu = diff(modele,singugins_directeur,["modele","singugins"])
+    
+    Rapport("../ALBH00CAN_R_20250010000_01D_30S_MO.rnx.yml","../directeur.yml",["Shom","Singugins"])
 
     
