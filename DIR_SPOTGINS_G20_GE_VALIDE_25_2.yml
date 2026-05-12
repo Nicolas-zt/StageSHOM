@@ -1,0 +1,151 @@
+date        :
+  arc_start : [JUL50, 18.0]
+  arc_stop  : [JUL50, 86390.0]
+model          :
+  environment :
+    earth_orientation_parameters   : pole/nominal_NRO
+    gnss_antenna                   : ANTEX/defaut
+    gnss_clock                     : horloges/G20/defaut
+    ionex_files                    : ionosphere/igs/defaut
+    apriori_parameters             : EXE_PPP/valap_static
+    gnss_preprocessing_options     : options_prairie_static
+    macromodel                     : macromod/gnss.xml
+    external_attitude              : attitude/G20/defaut
+    gravity                        : unused
+    ocean_tides                    : unused
+    ocean_pole_tide                : unused
+    atmospheric_tides              : unused
+    inverse_barometer              : unused
+    atmospheric_pressure           : unused
+    mean_sea_surface               : unused
+    solar_activity                 : unused
+    thermosphere                   : unused
+    albedo_ir                      : unused
+    temporal_nutation              : unused
+    trigonometric_nutation         : unused
+    planet_ephemerides             : lunisolaires/de440bdlf.ad
+    natural_satellite              : unused
+  mean_pole   :
+    compute_c21_s21_from : potential_model
+    iers_model           : 2018.0
+object         :
+  station       :
+    station_coordinates        : STATION_FILE
+    ocean_tide_loading         : OCEAN_LOADING_FILE
+    atmosphere_loading         : unused
+    ocean_pole_tide_loading    : maree_polaire/loading/nominal
+    center_of_mass_correction  : unused
+  constellation :
+  - name                : GNSS_GPS
+    gnss_center_of_mass : [corrected, corrected, corrected, corrected]
+    force               :
+      gravity_field_maximum_degree                 : not_computed
+      gravity_from_sun_and_planet                  : not_computed
+      integration_reference_frame                  : inertial_j2000
+      atmospheric_drag                             : not_computed
+      thermospheric_wind                           : no
+      solar_pressure                               : not_computed
+      solid_tide                                   : iers_2010_conventions
+      gravity_from_ocean_tides                     : not_computed
+      relativistic_acceleration                    : not_computed
+      gravity_from_atmospheric_pressure_variations : not_computed
+      satellite_emission                           : not_computed
+      accelerometer_attitude_thrust                : not_computed
+observation    :
+  removal          :
+    minimum_gnss_data_per_pass         : 5
+    nsigma_threshold                   : 5
+    first_iteration_residual_threshold : 0
+    minimum_elevation_threshold        : 0
+    data_sampling                      : 300
+  interobject_data :
+  - file                  : orbites/G20
+    name                  : GNSS_ephemeris
+    objects               : [GNSS_GPS, unknown]
+    type                  : fixed_ephemeris
+    bodyfixed_ephemerides : yes
+  - file                                   : RINEX_FILE
+    name                                   : GNSS_measurement
+    objects                                : [GNSS_GPS, station]
+    type                                   : undifferentiated_gnss
+    tropospheric_correction                : [wet, vmf1, vmf1]
+    nb_adjusted_biases_per_day_per_station : 24
+    min_elevation_phase                    : 8
+    min_elevation_range                    : 8
+    apriori_obs_stddev                     : 0.05
+    apriori_model_stddev                   : 5.0
+    gps_phase_ponderation_law              : [0.0035, 0.15, 1.0]
+    gps_code_ponderation_law               : [0.6000, 0.15, 1.0]
+    gal_phase_ponderation_law              : [0.0035, 0.15, 1.0]
+    gal_code_ponderation_law               : [0.6000, 0.15, 1.0] 
+    gnss_antenna_corrections               :
+      alternative_frequencies              : no
+      unavailable_map                      : elim
+      libantex                             : yes
+    gnss_options                           :
+      phase_observations_process       : yes
+      clock_parameters_globally_solved : no
+    observation_options                    : [initialize_from_clock_file, constellation_as_time_reference]
+    phase_nsigma_threshold                 : 5
+    code_nsigma_threshold                  : 5
+    max_iter_gps_removal                   : 5
+    phase_rms_threshold_after_iter_max     : 0
+    code_rms_threshold_after_iter_max      : 0
+    minimum_number_observations_per_pass   : 5
+parameter      :
+  algorithm             :
+    allow_elim_at_convergence : yes
+    nb_iter_min_max           : [3, 20]
+    convergence_criterion     : 0.1
+  adjustment_parameters :
+    stations :
+      adjustment_type      : [geodetic_marker, all_stations]
+      geocenter            : not_adjusted
+      coordinates          : cartesian_xyz
+      velocity             : not_adjusted
+      label_output         : middle_of_period
+      adjustment_frequency : [1, 0, 0, 0]
+  constellation         :
+  - name                  : GNSS_GPS
+    integration           :
+      integration_stepsize      : 0.0
+      low_inclination_formalism : normal
+      regularization            : not_regularized
+      integration_algorithm     : none
+      integration_order         : 0
+      encke_technique           : 0
+    direct_solar_pressure :
+      adjustment_type       : not_adjusted
+    albedo_ir             :
+      adjustment_type  : not_adjusted
+    thermal_reemission    :
+      adjustment_type : not_adjusted
+    bias                  :
+      r_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      t_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      n_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      x_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      y_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      z_bias : [none, 0.0, 0.0, 0.0, 0.0]
+output         :
+  edition   :
+    measurement_residuals_print : no
+    normal_matrix_print         : no
+    parameters_print            : no
+    residuals_station_print     : no
+  archiving :
+    orbit                    : no
+    measurement_file_update  : no
+    statistic_file           : no
+    normal_equation          : no
+    non_gravitational_forces : no
+    observation_matrix       : no
+user_extension :
+  userext_addition :
+  - "GPS__HAUTE_FREQ SITE_ID"
+  - "GPS__AFF_SINEX"
+  - "LGAIN PPP"
+  - "GALILEO"
+  - "GPS__QUALITEORB 0.037"
+  - "ADMIT_OCELOAD"
+  - "GRADIENTS_TROPO 2"
