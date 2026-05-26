@@ -24,7 +24,8 @@ def Open(dir_path):
         for d in dirs:
             print(d)
             for f in os.listdir(root + '/' + d):
-                if f.endswith('.IPPP'):
+                if f.endswith('.PPP'):
+                    print(f)
                     path = f"{root}/{d}/{f}"
                     
                     List.append(pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols))
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     
     
     ### Ouverturedes résultats Gins
-    GinsResults = Open('../GinsResults')
+    GinsResults = Open('../GinsResults/SPOTGINS_TESTS')
     
     ### Comparaison avec la ref SHOM
     Diff_list = Diff(GinsResults, data)
