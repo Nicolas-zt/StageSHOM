@@ -11,21 +11,22 @@ def Compar(f1,f2):
     return ratio
 
 def Diff(df_list,ref):
-    
+    List = []
     for df in df_list:
-    
-        df.iloc[:,3:] = np.abs(df.iloc[:,3:] - ref.iloc[:,3:])
         
-    return df_list
+        dfc = df.copy()
+        dfc.iloc[:,3:] = np.abs(dfc.iloc[:,3:] - ref.iloc[:,3:])
+        List.append(dfc)
+        
+    return List
 
 def Open(dir_path):
     List = []
     for (root,dirs,file) in os.walk(dir_path):
-        for d in dirs:
+        for d in sorted(dirs):
             print(d)
             for f in os.listdir(root + '/' + d):
                 if f.endswith('.PPP'):
-                    print(f)
                     path = f"{root}/{d}/{f}"
                     
                     List.append(pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols))
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     
     
     ### Ouverturedes résultats Gins
-    GinsResults = Open('../GinsResults/SPOTGINS_TESTS')
+    GinsResults = Open('../GinsResults')
     
     ### Comparaison avec la ref SHOM
     Diff_list = Diff(GinsResults, data)
