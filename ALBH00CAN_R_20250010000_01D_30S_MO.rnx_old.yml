@@ -1,0 +1,166 @@
+version        : 25_2
+date           :
+  arc_start                 : [27394, 19]
+  arc_stop                  : [27395, 19]
+  initial_state_vector_date : [27394, 19]
+model          :
+  environment :
+    gnss_antenna                 : antex/igs20.atx
+    gnss_clock                   : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/preproc/GRG.clk.gins
+    ionex_files                  : ionosphere/defaut
+    macromodel                   : macromod/nominal
+    apriori_parameters           : .temp.gin/archives/SHOM/contraintes_gins_static
+    mobile_attitude              : unused
+    gravity                      : unused
+    ocean_tides                  : unused
+    inverse_barometer            : unused
+    atmospheric_pressure         : unused
+    mean_sea_surface             : unused
+    solar_activity               : unused
+    thermosphere                 : unused
+    albedo_ir                    : unused
+    earth_orientation_parameters : pole/nominal_NRO
+    temporal_nutation            : unused
+    trigonometric_nutation       : unused
+    planet_ephemerides           : lunisolaires/nominal
+    natural_satellite            : unused
+  mean_pole   :
+    compute_c21_s21_from : potential_model
+    iers_model           : 2010.0
+object         :
+  station       :
+    station_coordinates       : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/XYZ_ALBH
+    ocean_tide_loading        : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/OTL_ALBH
+    station_data_corrections  : unused
+    atmosphere_loading        : unused
+    center_of_mass_correction : unused
+    ocean_pole_tide_loading   : maree_polaire/loading/nominal
+  quasar        : unused
+  constellation :
+  - name                : haut
+    gnss_center_of_mass : [corrected, corrected, corrected, corrected]
+    force               :
+      gravity_field_maximum_degree                 : not_computed
+      gravity_from_sun_and_planet                  : not_computed
+      solid_tide                                   : iers_2010_conventions
+      integration_reference_frame                  : inertial_j2000
+      atmospheric_drag                             : not_computed
+      thermospheric_wind                           : no
+      solar_pressure                               : not_computed
+      gravity_from_ocean_tides                     : not_computed
+      relativistic_acceleration                    : not_computed
+      gravity_from_atmospheric_pressure_variations : not_computed
+      satellite_emission                           : not_computed
+      accelerometer_attitude_thrust                : not_computed
+observation    :
+  removal          :
+    simulation_stepsize                : 900
+    minimum_laser_raw_data             : 0
+    minimum_doppler_data_per_pass      : 0
+    minimum_gnss_data_per_pass         : 0
+    nsigma_threshold                   : 5
+    first_iteration_residual_threshold : 0
+    minimum_elevation_threshold        : 0
+  interobject_data :
+  - file                  : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/preproc/GRG.sp3.gins
+    name                  : ephemerides_GNSS
+    objects               : [haut, unknown]
+    type                  : fixed_ephemeris
+    bodyfixed_ephemerides : yes
+  - file                                   : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/preproc/ALBH00CAN_R_20250010000_01D_30S_MO.rnx.mes
+    objects                                : [haut, station]
+    type                                   : undifferentiated_gnss
+    tropospheric_correction                : [wet, vmf1, vmf1]
+    apriori_obs_stddev                     : 0.05
+    apriori_model_stddev                   : 5.0
+    nb_adjusted_biases_per_day_per_station : 24
+    observation_options                    : [initialize_from_clock_file, constellation_as_time_reference]
+    min_elevation_phase                    : 5
+    min_elevation_range                    : 5
+    phase_nsigma_threshold                 : 5
+    code_nsigma_threshold                  : 5
+    max_iter_gps_removal                   : 5
+    phase_rms_threshold_after_iter_max     : 0
+    code_rms_threshold_after_iter_max      : 0
+    minimum_number_observations_per_pass   : 5
+    gps_phase_ponderation_law              : [0.0035, 0.15, 1.0]
+    gps_code_ponderation_law               : [0.6000, 0.15, 1.0]
+    gal_phase_ponderation_law              : [0.0035, 0.15, 1.0]
+    gal_code_ponderation_law               : [0.6000, 0.15, 1.0]
+    gnss_options                           :
+      phase_observations_process       : yes
+      clock_parameters_globally_solved : no
+parameter      :
+  algorithm             :
+    type                  : least_square
+    kalman_options        :
+      state_reduction  : yes
+      forward_backward : yes
+    nb_iter_min_max       : [3, 15]
+    convergence_criterion : 0.5
+  adjustment_parameters :
+    stations :
+      adjustment_frequency : [1, 0, 0, 0]
+      adjustment_type      : [geodetic_marker, all_stations]
+      coordinates          : cartesian_xyz
+      velocity             : not_adjusted
+      label_output         : middle_of_period
+    pole     :
+      adjustment_x_y_t             : [not_adjusted, not_adjusted, not_adjusted]
+      love_h2_h2_tilde             : [not_adjusted, not_adjusted]
+      love_k2_k2_tilde             : [not_adjusted, not_adjusted]
+      nutation_longitude_obliquity : [not_adjusted, not_adjusted]
+  constellation         :
+  - name                  : haut
+    integration           :
+      integration_stepsize      : 900
+      low_inclination_formalism : normal
+      regularization            : not_regularized
+      integration_algorithm     : none
+      integration_order         : 0
+      encke_technique           : 0
+    direct_solar_pressure :
+      adjustment_type       : not_adjusted
+      initial_value         : 0.0
+      apriori_stddev        : 0.0
+      nb_days               : 0.0
+      surface_to_mass_ratio : 0.0
+    albedo_ir             :
+      adjustment_type  : not_adjusted
+      adjustment_param : 0.0
+      initial_value    : 0.0
+      apriori_stddev   : 0.0
+    thermal_reemission    :
+      adjustment_type : not_adjusted
+    bias                  :
+      r_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      t_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      n_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      x_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      y_bias : [none, 0.0, 0.0, 0.0, 0.0]
+      z_bias : [none, 0.0, 0.0, 0.0, 0.0]
+output         :
+  edition   :
+    measurement_residuals_print : no
+    normal_matrix_print         : no
+    residuals_station_print     : no
+  archiving :
+    orbit                    : no
+    extrapolated_orbit       : 0
+    measurement_file_update  : no
+    statistic_file           : no
+    normal_equation          : after_convergence
+    non_gravitational_forces : no
+user_extension :
+  userext_addition :
+  - "ADMIT_OCELOAD"
+  - "BIAIS_INTER_FREQ_IDENT"
+  - "BIAIS_INTER_FREQ_SIGMA 170.00"
+  - "COMMNT_MNA_EQNA"
+  - "GPS__AFF_SINEX"
+  - "GPS__HAUTE_FREQ ALBH"
+  - "GPS__QUALITEORB 0.037"
+  - "GRADIENTS_TROPO 2"
+  - "LGAIN PPP"
+  - "LGAIN_PPP"
+  - "PRINT_SOLUTION_FILE"
