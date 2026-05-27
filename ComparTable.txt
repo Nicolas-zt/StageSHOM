@@ -2,7 +2,6 @@
 
 ==================== Différences entre paramètres communs ======================================================================================================================================================
 
-date.arc_start[1]                                            |  18.0                                                                                             | 18
 model.environment.gnss_antenna                               |  antex/igs20.atx                                                                                  | ANTEX/defaut
 model.environment.gnss_clock                                 |  .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/preproc/GRG.clk.gins                                | horloges/G20/defaut
 model.environment.ionex_files                                |  ionosphere/defaut                                                                                | ionosphere/igs/defaut
@@ -17,19 +16,7 @@ parameter.constellation[0].integration.integration_stepsize  |  0               
 
 ==================== Paramètres manquants dans le fichier Shom ======================================================================================================================================================
 
-model.environment.atmospheric_tides                                               |  unused
-model.environment.external_attitude                                               |  attitude/G20/defaut
-model.environment.gnss_preprocessing_options                                      |  /root/spotgins/metadata/directeur/options_prairie_static
-model.environment.ocean_pole_tide                                                 |  unused
-observation.interobject_data[1].gnss_antenna_corrections.alternative_frequencies  |  False
-observation.interobject_data[1].gnss_antenna_corrections.libantex                 |  True
-observation.interobject_data[1].gnss_antenna_corrections.unavailable_map          |  elim
-observation.interobject_data[1].name                                              |  GNSS_measurement
-output.archiving.observation_matrix                                               |  False
-output.edition.parameters_print                                                   |  False
-parameter.adjustment_parameters.stations.geocenter                                |  not_adjusted
-parameter.algorithm.allow_elim_at_convergence                                     |  True
+model.environment.external_attitude           |  attitude/G20/defaut
+model.environment.gnss_preprocessing_options  |  /root/spotgins/metadata/directeur/options_prairie_static
 
 ==================== Paramètres manquants dans le fichier Singugins ======================================================================================================================================================
-
-object.station.atmospheric_s1s2_loading_model  |  unused
