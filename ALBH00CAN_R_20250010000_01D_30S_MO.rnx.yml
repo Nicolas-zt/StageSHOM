@@ -1,5 +1,5 @@
 date           :
-  arc_start : [27394, 18.0]
+  arc_start : [27394, 18]
   arc_stop  : [27394, 86390.0]
 model          :
   environment :
@@ -21,17 +21,18 @@ model          :
     trigonometric_nutation       : unused
     planet_ephemerides           : lunisolaires/nominal
     natural_satellite            : unused
+    atmospheric_tides            : unused
+    ocean_pole_tide              : unused
   mean_pole   :
     compute_c21_s21_from : potential_model
     iers_model           : 2018.0
 object         :
   station       :
-    station_coordinates            : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/XYZ_ALBH
-    ocean_tide_loading             : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/OTL_ALBH
-    atmosphere_loading             : unused
-    atmospheric_s1s2_loading_model : unused
-    center_of_mass_correction      : unused
-    ocean_pole_tide_loading        : maree_polaire/loading/nominal
+    station_coordinates       : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/XYZ_ALBH
+    ocean_tide_loading        : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/OTL_ALBH
+    atmosphere_loading        : unused
+    center_of_mass_correction : unused
+    ocean_pole_tide_loading   : maree_polaire/loading/nominal
   constellation :
   - name                : GNSS_GPS
     gnss_center_of_mass : [corrected, corrected, corrected, corrected]
@@ -84,6 +85,11 @@ observation    :
     gnss_options                           :
       phase_observations_process       : yes
       clock_parameters_globally_solved : no
+    gnss_antenna_corrections               :
+      alternative_frequencies : no
+      libantex                : yes
+      unavailable_map         : elim
+    name                                   : GNSS_measurement
 parameter      :
   adjustment_parameters :
     stations :
@@ -92,6 +98,7 @@ parameter      :
       coordinates          : cartesian_xyz
       velocity             : not_adjusted
       label_output         : middle_of_period
+      geocenter            : not_adjusted
   constellation         :
   - name                  : GNSS_GPS
     integration           :
@@ -115,19 +122,22 @@ parameter      :
       y_bias : [none, 0.0, 0.0, 0.0, 0.0]
       z_bias : [none, 0.0, 0.0, 0.0, 0.0]
   algorithm             :
-    nb_iter_min_max       : [3, 20]
-    convergence_criterion : 0.1
+    nb_iter_min_max           : [3, 20]
+    convergence_criterion     : 0.1
+    allow_elim_at_convergence : yes
 output         :
   edition   :
     measurement_residuals_print : no
     normal_matrix_print         : no
     residuals_station_print     : no
+    parameters_print            : no
   archiving :
     orbit                    : no
     measurement_file_update  : no
     statistic_file           : no
     normal_equation          : no
     non_gravitational_forces : no
+    observation_matrix       : no
 user_extension :
   userext_addition :
   - "ADMIT_OCELOAD"
