@@ -11,27 +11,38 @@ def Compar(f1,f2):
     return ratio
 
 def Diff(df_list,ref):
-    List = []
-    for df in df_list:
+    List = {}
+    for f in df_list:
         
+        df = df_list[f]
         dfc = df.copy()
         dfc.iloc[:,3:] = np.abs(dfc.iloc[:,3:] - ref.iloc[:,3:])
-        List.append(dfc)
+        List[f] = (dfc)
         
     return List
 
 def Open(dir_path):
-    List = []
+    List = {}
     for (root,dirs,file) in os.walk(dir_path):
         for d in sorted(dirs):
-            print(d)
             for f in os.listdir(root + '/' + d):
                 if f.endswith('.PPP'):
                     path = f"{root}/{d}/{f}"
                     
-                    List.append(pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols))
+                    List[d]=(pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols))
                     
     return List
+
+def export(diff_list):
+    for f in diff_list:
+        for g in diff_list:
+            diff = Diff({0:diff_list[g]},diff_list[f])
+            print(diff)
+            if diff[0].to_numpy().any() == 0:
+                break
+        diff_list[f].to_csv(f"../GinsResults/{f}.csv")
+        
+        
 if __name__ == "__main__":
     
     cols = ["# type","calendar  epoch","julian days(1950)","correction (X or lat)",
