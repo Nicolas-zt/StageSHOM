@@ -4,11 +4,15 @@
 1  FLH_SOL  2025-01-01T11:57:49.000       27394.498484           3.874284e-09         3.874298e-09           5.132392e-09         5.132989e-09             0.004322           0.004322  2.676469e-18  1.409971e-17  4.307143e-07  3.308452e-19  3.246974e-13  1.116361e-13
 2  ENU_SOL  2025-01-01T11:57:49.000       27394.498484           3.801156e-04         3.874298e-09           4.308141e-04         5.132989e-09             0.004322           0.004322  7.733914e-08  3.309480e-08  4.307143e-07  2.724697e-09  8.267979e-09  3.610585e-08
 
+
+
 ================================================================================ Influence sur le calcul du TEST02-iers_model ================================================================================
     # type          calendar  epoch  julian days(1950)  correction (X or lat)  position (X or lat)  correction (Y or lon)  position (Y or lon)  correction (Z or h)  position (Z or h)         cov11         cov22         cov33         cov21         cov31         cov32
 0  XYZ_SOL  2025-01-01T11:52:49.000       27394.495012           1.875240e-03         1.875240e-03           1.954546e-03         1.954540e-03             0.002491           0.002491  1.833136e-14  2.679845e-14  2.351022e-14  4.659420e-15  1.042373e-14  1.842694e-14
 1  FLH_SOL  2025-01-01T11:52:49.000       27394.495012           3.044065e-09         3.044100e-09           6.555751e-09         6.555979e-09             0.003632           0.003632  4.421306e-25  3.104030e-24  4.668335e-14  7.283436e-26  4.569891e-20  3.314176e-20
 2  ENU_SOL  2025-01-01T11:52:49.000       27394.495012           4.855319e-04         3.044100e-09           3.384946e-04         6.555979e-09             0.003632           0.003632  1.661127e-14  5.345415e-15  4.668335e-14  5.861005e-16  2.423257e-15  5.024637e-15
+
+
 
 ================================================================================ Influence sur le calcul du TEST03-min_eleveation_phase-range ================================================================================
     # type          calendar  epoch  julian days(1950)  correction (X or lat)  position (X or lat)  correction (Y or lon)  position (Y or lon)  correction (Z or h)  position (Z or h)         cov11         cov22         cov33         cov21         cov31         cov32
@@ -16,11 +20,15 @@
 1  FLH_SOL  2025-01-01T11:52:49.000       27394.495012           1.500482e-09         1.500396e-09           2.539764e-09         2.540020e-09             0.000709           0.000709  1.362624e-18  5.446056e-18  2.716814e-07  1.354419e-19  1.838717e-13  1.746428e-13
 2  ENU_SOL  2025-01-01T11:52:49.000       27394.495012           1.881021e-04         1.500396e-09           1.668522e-04         2.540020e-09             0.000709           0.000709  2.987248e-08  1.684897e-08  2.716814e-07  1.115441e-09  1.293437e-08  2.044625e-08
 
+
+
 ================================================================================ Influence sur le calcul du TEST07-Dates ================================================================================
     # type          calendar  epoch  julian days(1950)  correction (X or lat)  position (X or lat)  correction (Y or lon)  position (Y or lon)  correction (Z or h)  position (Z or h)         cov11         cov22         cov33         cov21         cov31         cov32
 0  XYZ_SOL  2025-01-01T11:52:49.000       27394.495012           7.792445e-07         7.799827e-07           1.288404e-05         1.288019e-05             0.000003           0.000003  2.349750e-09  3.931425e-09  3.532666e-09  1.036570e-09  1.688775e-09  2.913916e-09
 1  FLH_SOL  2025-01-01T11:52:49.000       27394.495012           5.087486e-11         5.090328e-11           1.047340e-10         1.050182e-10             0.000009           0.000009  5.509072e-20  3.422462e-19  7.255365e-09  1.319782e-20  7.459247e-15  4.902877e-15
 2  ENU_SOL  2025-01-01T11:52:49.000       27394.495012           7.758723e-06         5.090328e-11           5.656724e-06         1.050182e-10             0.000009           0.000009  1.877274e-09  6.812021e-10  7.255365e-09  1.086915e-10  3.631161e-10  8.294567e-10
+
+
 
 ================================================================================ Influence sur le calcul du TEST36-allow_elim_at_convergence ================================================================================
     # type          calendar  epoch  julian days(1950)  correction (X or lat)  position (X or lat)  correction (Y or lon)  position (Y or lon)  correction (Z or h)  position (Z or h)         cov11         cov22         cov33         cov21         cov31         cov32
@@ -28,3 +36,40 @@
 1  FLH_SOL  2025-01-01T11:57:49.000       27394.498484           7.211369e-10         7.211014e-10           3.858389e-09         3.857991e-09             0.000028           0.000028  1.368936e-18  8.995897e-18  1.662882e-07  2.086010e-19  1.482849e-13  6.790956e-14
 2  ENU_SOL  2025-01-01T11:57:49.000       27394.498484           2.857597e-04         7.211014e-10           8.018946e-05         3.857991e-09             0.000028           0.000028  4.934392e-08  1.692702e-08  1.662882e-07  1.717947e-09  5.029508e-09  1.648905e-08
 
+
+
+Paramètres n'ayant pas changé le calcul :
+
+convergence_criterion
+minimum_gnss_data_per_pass
+integration_stepsize
+Constellation_name
+HORS_CALCUL
+Mobile_attitude
+Station_data_correction
+Quasar
+Simulation_Stepsize-data_sampling
+Minimum_laser_raw_data
+Minimum_doppler_data_per_pass
+Algo_type
+Kalman_state_reduction
+Kalman_forward_backward
+Pole
+Solar_Pressure_Initial_value
+Solar_pressure_apriori_stddev
+Solar_pressure_nb_days
+Surface_to_mass_ratio
+albedo_adjustment_param
+albedo_initial_value
+albedo_apriori_stddev
+lgain_PPP
+HORS_CALCUL
+atmospheric_tides
+ocean_pole_tide
+alternative_frequencies
+libantex
+unavailable_map
+Interobject_data[1]-name
+geocenter
+atmospheric_s1s2_loading_model
+HORS_CALCUL
