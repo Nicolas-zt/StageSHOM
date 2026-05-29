@@ -1,6 +1,7 @@
 import pandas as pd 
 import numpy as np
 import os
+import re 
 
 def Compar(f1,f2):
     
@@ -10,37 +11,57 @@ def Compar(f1,f2):
     
     return ratio
 
-def Diff(df_list,ref):
-    List = {}
-    for f in df_list:
+def Diff(df_dic,ref):
+    dic = {}
+    for key in df_dic:
         
-        df = df_list[f]
+        df = df_dic[key]
         dfc = df.copy()
         dfc.iloc[:,3:] = np.abs(dfc.iloc[:,3:] - ref.iloc[:,3:])
-        List[f] = (dfc)
+        dic[key] = (dfc)
         
-    return List
+    return dic
 
 def Open(dir_path):
-    List = {}
+    dic = {}
     for (root,dirs,file) in os.walk(dir_path):
         for d in sorted(dirs):
             for f in os.listdir(root + '/' + d):
                 if f.endswith('.PPP'):
-                    path = f"{root}/{d}/{f}"
-                    
-                    List[d]=(pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols))
-                    
-    return List
+                    path = f"{root}/{d}/{f}" 
+                    dic[d]=(pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols))
+    return dic
 
-def export(diff_list):
-    for f in diff_list:
-        for g in diff_list:
-            diff = Diff({0:diff_list[g]},diff_list[f])
-            print(diff)
-            if diff[0].to_numpy().any() == 0:
-                break
-        diff_list[f].to_csv(f"../GinsResults/{f}.csv")
+def Tri(diff_dic):
+    d = {}
+    useless = []
+    values = list(diff_dic.values())
+    keys = list(diff_dic.keys())
+    for i,v in enumerate(values):
+        f = keys[i]
+        diff = Diff({0:values[i-1]},values[i])
+        if 0.0 not in diff[0].to_numpy():
+            print(diff[0].iloc[:,3:])
+            diff_dic[f].to_csv(f"../GinsResults/{f}.csv")
+            d[f] = diff[0]
+        else:
+            useless.append(f)
+    return d,useless
+
+def export(export_list,useless_params,path):
+    
+    with open(path,"w") as f:
+        
+        for key in export_list:
+            f.write("="*80 + f" Influence sur le calcul du {key} " + "="*80)
+            f.write("\n")
+            f.write(export_list[key].to_string())
+            f.write("\n"*4)
+            
+        f.write("Paramètres n'ayant pas changé le calcul :" + "\n"*2)
+        for param in useless_params:
+            
+            f.write(param[7:] + "\n")
         
         
 if __name__ == "__main__":
@@ -56,6 +77,10 @@ if __name__ == "__main__":
     GinsResults = Open('../GinsResults')
     
     ### Comparaison avec la ref SHOM
-    Diff_list = Diff(GinsResults, data)
+    Diff_dic = Diff(GinsResults, data)
     
+    ### Export
+    d,useless = Tri(Diff_dic)
+    
+    export(d,useless,"../GinsResults/Changements_calcul")
     
