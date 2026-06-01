@@ -3,11 +3,11 @@ date           :
   arc_stop  : [27394, 86390.0]
 model          :
   environment :
-    gnss_antenna                 : antex/igs20.atx
-    gnss_clock                   : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/preproc/GRG.clk.gins
-    ionex_files                  : ionosphere/defaut
-    macromodel                   : macromod/nominal
-    apriori_parameters           : .temp.gin/archives/SHOM/contraintes_gins_static
+    gnss_antenna                 : ANTEX/defaut
+    gnss_clock                   : horloges/G20/defaut
+    ionex_files                  : ionosphere/igs/defaut
+    macromodel                   : macromod/gnss.xml
+    apriori_parameters           : EXE_PPP/valap_static
     gravity                      : unused
     ocean_tides                  : unused
     inverse_barometer            : unused
@@ -19,17 +19,18 @@ model          :
     earth_orientation_parameters : pole/nominal_NRO
     temporal_nutation            : unused
     trigonometric_nutation       : unused
-    planet_ephemerides           : lunisolaires/nominal
+    planet_ephemerides           : lunisolaires/de440bdlf.ad
     natural_satellite            : unused
     atmospheric_tides            : unused
     ocean_pole_tide              : unused
+    external_attitude            : attitude/G20/defaut
   mean_pole   :
     compute_c21_s21_from : potential_model
     iers_model           : 2018.0
 object         :
   station       :
-    station_coordinates       : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/XYZ_ALBH
-    ocean_tide_loading        : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/OTL_ALBH
+    station_coordinates       : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/station_file.dat
+    ocean_tide_loading        : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/load_fes2022_cf.spotgins
     atmosphere_loading        : unused
     center_of_mass_correction : unused
     ocean_pole_tide_loading   : maree_polaire/loading/nominal
@@ -57,7 +58,7 @@ observation    :
     first_iteration_residual_threshold : 0
     minimum_elevation_threshold        : 0
   interobject_data :
-  - file                  : .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/preproc/GRG.sp3.gins
+  - file                  : orbites/G20/defaut
     name                  : GNSS_ephemeris
     objects               : [GNSS_GPS, unknown]
     type                  : fixed_ephemeris
@@ -145,6 +146,7 @@ user_extension :
   - "BIAIS_INTER_FREQ_SIGMA 170.00"
   - "GALILEO"
   - "GPS__AFF_SINEX"
+  - "GPS__ATTITUDE_INTERP 3.1"
   - "GPS__HAUTE_FREQ ALBH"
   - "GPS__QUALITEORB 0.037"
   - "GRADIENTS_TROPO 2"
