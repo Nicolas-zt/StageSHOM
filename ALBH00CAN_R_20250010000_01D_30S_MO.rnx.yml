@@ -142,8 +142,6 @@ output         :
 user_extension :
   userext_addition :
   - "ADMIT_OCELOAD"
-  - "BIAIS_INTER_FREQ_IDENT"
-  - "BIAIS_INTER_FREQ_SIGMA 170.00"
   - "GALILEO"
   - "GPS__AFF_SINEX"
   - "GPS__ATTITUDE_INTERP 3.1"
