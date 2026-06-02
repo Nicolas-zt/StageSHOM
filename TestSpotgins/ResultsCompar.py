@@ -63,7 +63,74 @@ def export(export_list,useless_params,path):
             
             f.write(param[7:] + "\n")
         
+def heikkinen(X1,Y1,Z1):
+    
+    a=6378137.0000 #m
+    b=6356752.3142 
+
+    e2 = (a**2 - b**2) / (a**2)
+    ep2 = (a**2 - b**2) / (b**2)
+    p=np.sqrt(X1**2+Y1**2)
+    F=54*b**2*Z1**2
+    G=p**2+(1.-e2)*Z1**2 - e2*(a**2-b**2)
+    c=e2**2*F*p**2/G**3
+    s=np.cbrt((1.+c+np.sqrt(c**2+2.*c)))
+    k=s+1.+(1./s)
+    P=F/(3.*k**2*G**2)
+    Q=np.sqrt(1.+2.*P*e2**2)
+    r0=-(P*e2*p)/(1+Q) + np.sqrt(0.5*a**2*(1.+1./Q) - (P*(1.-e2)*Z1**2)/(Q*(1.+Q)) - 0.5*P*p**2)
+    U=np.sqrt(Z1**2 + (p-e2*r0)**2)
+    V=np.sqrt((1.-e2)*Z1**2 + (p-e2*r0)**2)
+    z0=b**2*Z1/(a*V)
+
+    lat=np.arctan((Z1+ep2*z0)/p)
+    lon=np.arctan2(Y1,X1)
+
+    return lat, lon
+
+def convert(Results):
+    
         
+    Xref = -2341332.129261
+    Yref = -3539048.188331
+    Zref =  4745792.713020
+    
+    lat, lon = heikkinen(Xref,Yref,Zref)
+
+    #matrix elements
+    mat11=-np.sin(lon)
+    mat12=+np.cos(lon)
+    mat13=0.
+    mat21=-np.sin(lat)*np.cos(lon)
+    mat22=-np.sin(lat)*np.sin(lon)
+    mat23=+np.cos(lat)
+    mat31=+np.cos(lat)*np.cos(lon)
+    mat32=+np.cos(lat)*np.sin(lon)
+    mat33=+np.sin(lat)
+    
+    Results_ENU = {}
+    
+    for key in Results:
+        
+        df = Results[key]
+        X = df.iloc[0,4]
+        Y = df.iloc[0,6]
+        Z = df.iloc[0,8]
+        
+        dX = X-Xref
+        dY = Y-Yref
+        dZ = Z-Zref
+        
+        E = mat11*dX + mat12*dY + mat13*dZ
+        N = mat21*dX + mat22*dY + mat23*dZ
+        U = mat31*dX + mat32*dY + mat33*dZ  
+        
+        df_ENU = pd.DataFrame(np.array([E,N,U]).reshape(1,3),columns = ["E","N","U"])
+        
+        Results_ENU[key] = df_ENU
+        
+    return Results_ENU
+    
 if __name__ == "__main__":
     
     cols = ["# type","calendar  epoch","julian days(1950)","correction (X or lat)",
@@ -83,4 +150,6 @@ if __name__ == "__main__":
     d,useless = Tri(Diff_dic)
     
     export(d,useless,"../GinsResults/Changements_calcul")
+
+    Gins_Results_ENU = convert(GinsResults)
     
