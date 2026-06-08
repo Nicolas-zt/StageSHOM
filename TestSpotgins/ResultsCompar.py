@@ -41,7 +41,6 @@ def Tri(diff_dic):
         f = keys[i]
         diff = Diff({0:values[i-1]},values[i])
         if 0.0 not in diff[0].to_numpy():
-            print(diff[0].iloc[:,3:])
             diff_dic[f].to_csv(f"../GinsResults/{f}.csv")
             d[f] = diff[0]
         else:
@@ -96,6 +95,7 @@ def convert(Results):
     Zref =  4745792.713020
     
     lat, lon = heikkinen(Xref,Yref,Zref)
+    print(lat*180/np.pi,lon*180/np.pi)
 
     #matrix elements
     mat11=-np.sin(lon)
@@ -125,7 +125,10 @@ def convert(Results):
         N = mat21*dX + mat22*dY + mat23*dZ
         U = mat31*dX + mat32*dY + mat33*dZ  
         
+        df_date = Results[key].iloc[[0],1:3]
+
         df_ENU = pd.DataFrame(np.array([E,N,U]).reshape(1,3),columns = ["E","N","U"])
+        df_ENU = pd.concat([df_date,df_ENU],axis = 1)
         
         Results_ENU[key] = df_ENU
         
