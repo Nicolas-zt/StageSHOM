@@ -27,7 +27,7 @@ def Open(dir_path):
     for (root,dirs,file) in os.walk(dir_path):
         for d in sorted(dirs):
             for f in os.listdir(root + '/' + d):
-                if f.endswith('.PPP'):
+                if f.endswith('.IPPP'):
                     path = f"{root}/{d}/{f}" 
                     dic[d]=(pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols))
     return dic
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     GinsResults = Open('../GinsResults')
     
     ### Comparaison avec la ref SHOM
-    Diff_dic = Diff(GinsResults, data)
+    Diff_dic = Diff(GinsResults, data2)
     
     ### Export
     d,useless = Tri(Diff_dic)
