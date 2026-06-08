@@ -147,7 +147,7 @@ if __name__ == "__main__":
     GinsResults = Open('../GinsResults')
     
     ### Comparaison avec la ref SHOM
-    Diff_dic = Diff(GinsResults, data)
+    Diff_dic = Diff(GinsResults, data2)
     
     ### Export
     d,useless = Tri(Diff_dic)
