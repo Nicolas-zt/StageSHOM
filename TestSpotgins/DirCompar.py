@@ -107,8 +107,8 @@ def Rapport(f1,f2,noms):
             
 if __name__ == "__main__":
 
-    # shom_directeur = convert("../ALBH00CAN_R_20250010000_01D_30S_MO.rnx.yml")
-    # singugins_directeur = convert("../directeur.yml")
+    shom_directeur = convert("../ALBH00CAN_R_20250010000_01D_30S_MO.rnx.yml")
+    singugins_directeur = convert("../directeur.yml")
     # modele = convert('../DIR_SPOTGINS_G20_GE_VALIDE_25_2.yml')
 
     # missing_shom,missing_singugins = missing(shom_directeur, singugins_directeur)

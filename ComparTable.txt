@@ -2,21 +2,14 @@
 
 ==================== Différences entre paramètres communs ======================================================================================================================================================
 
-model.environment.gnss_antenna                               |  antex/igs20.atx                                                                                  | ANTEX/defaut
-model.environment.gnss_clock                                 |  .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/preproc/GRG.clk.gins                                | horloges/G20/defaut
-model.environment.ionex_files                                |  ionosphere/defaut                                                                                | ionosphere/igs/defaut
-model.environment.macromodel                                 |  macromod/nominal                                                                                 | macromod/gnss.xml
-model.environment.apriori_parameters                         |  .temp.gin/archives/SHOM/contraintes_gins_static                                                  | EXE_PPP/valap_static
-model.environment.planet_ephemerides                         |  lunisolaires/nominal                                                                             | lunisolaires/de440bdlf.ad
-object.station.station_coordinates                           |  .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/XYZ_ALBH                                    | .temp.gin/TMP_GYNS/20260504T110335_SPOTGINS_ALBH00CAN_2025_001_27394__/station_file.dat
-object.station.ocean_tide_loading                            |  .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/OTL_ALBH                                    | .temp.gin/TMP_GYNS/20260504T110335_SPOTGINS_ALBH00CAN_2025_001_27394__/load_fes2014b_cf.spotgins
-observation.interobject_data[0].file                         |  .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/preproc/GRG.sp3.gins                                | orbites/G20/defaut
+object.station.station_coordinates                           |  .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/station_file.dat                            | .temp.gin/TMP_GYNS/20260504T110335_SPOTGINS_ALBH00CAN_2025_001_27394__/station_file.dat
+object.station.ocean_tide_loading                            |  .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/station/load_fes2022_cf.spotgins                    | .temp.gin/TMP_GYNS/20260504T110335_SPOTGINS_ALBH00CAN_2025_001_27394__/load_fes2014b_cf.spotgins
 observation.interobject_data[1].file                         |  .temp./DONNEES/98765-TEST/TEST_SPOTGINS/gins/preproc/ALBH00CAN_R_20250010000_01D_30S_MO.rnx.mes  | .temp.gin/TMP_GYNS/20260504T110335_SPOTGINS_ALBH00CAN_2025_001_27394__/ALBH00CAN_R_20250010000_01D_30S_MO.rnx
 parameter.constellation[0].integration.integration_stepsize  |  0                                                                                                | 0.0
 
 ==================== Paramètres manquants dans le fichier Shom ======================================================================================================================================================
 
-model.environment.external_attitude           |  attitude/G20/defaut
 model.environment.gnss_preprocessing_options  |  /root/spotgins/metadata/directeur/options_prairie_static
+user_extension.userext_addition[8]            |  GPS__AFF_SINEX
 
 ==================== Paramètres manquants dans le fichier Singugins ======================================================================================================================================================
