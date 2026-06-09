@@ -89,45 +89,60 @@ def heikkinen(X1,Y1,Z1):
 
 def convert(Results):
     
-        
-    Xref = -2341332.129261
-    Yref = -3539048.188331
-    Zref =  4745792.713020
-    
-    lat, lon = heikkinen(Xref,Yref,Zref)
-    print(lat*180/np.pi,lon*180/np.pi)
-
-    #matrix elements
-    mat11=-np.sin(lon)
-    mat12=+np.cos(lon)
-    mat13=0.
-    mat21=-np.sin(lat)*np.cos(lon)
-    mat22=-np.sin(lat)*np.sin(lon)
-    mat23=+np.cos(lat)
-    mat31=+np.cos(lat)*np.cos(lon)
-    mat32=+np.cos(lat)*np.sin(lon)
-    mat33=+np.sin(lat)
-    
+    refs = [[-2341332.129261 , -3539048.188331 , 4745792.713020 ],
+            [4917537.991116  , -815726.306152  , 3965856.072655 ],
+            [-3950072.510418 ,  2522415.723761 , -4311636.991987],
+            [2612632.988907  , -3426809.705573 , 4686754.886249 ],
+            [4331297.348000  ,  567555.639000  , 4633133.728000 ]]
+           
     Results_ENU = {}
     
     for key in Results:
         
         df = Results[key]
-        X = df.iloc[0,4]
-        Y = df.iloc[0,6]
-        Z = df.iloc[0,8]
-        
-        dX = X-Xref
-        dY = Y-Yref
-        dZ = Z-Zref
-        
-        E = mat11*dX + mat12*dY + mat13*dZ
-        N = mat21*dX + mat22*dY + mat23*dZ
-        U = mat31*dX + mat32*dY + mat33*dZ  
-        
         df_date = Results[key].iloc[[0],1:3]
-
-        df_ENU = pd.DataFrame(np.array([E,N,U]).reshape(1,3),columns = ["E","N","U"])
+        
+        array = []
+        nb_row = 0
+        
+        for index,row in df.iterrows():
+            
+            if nb_row%3 == 0 :
+            
+                X = row.iloc[4]
+                Y = row.iloc[6]
+                Z = row.iloc[8]
+                
+                for ref in refs:
+                    
+                    Xref = ref[0]
+                    Yref = ref[1]
+                    Zref = ref[2]
+                    lat, lon = heikkinen(Xref,Yref,Zref)   
+                    dX = X-Xref
+                    dY = Y-Yref
+                    dZ = Z-Zref
+                    
+                    if abs(dX) < 10 :
+                        #matrix elements
+                        mat11=-np.sin(lon)
+                        mat12=+np.cos(lon)
+                        mat13=0.
+                        mat21=-np.sin(lat)*np.cos(lon)
+                        mat22=-np.sin(lat)*np.sin(lon)
+                        mat23=+np.cos(lat)
+                        mat31=+np.cos(lat)*np.cos(lon)
+                        mat32=+np.cos(lat)*np.sin(lon)
+                        mat33=+np.sin(lat)
+                
+                        E = mat11*dX + mat12*dY + mat13*dZ
+                        N = mat21*dX + mat22*dY + mat23*dZ
+                        U = mat31*dX + mat32*dY + mat33*dZ  
+                        
+                        array.append([E,N,U])
+            nb_row += 1
+            
+        df_ENU = pd.DataFrame(np.array(array).reshape(nb_row//3,3),columns = ["E","N","U"])
         df_ENU = pd.concat([df_date,df_ENU],axis = 1)
         
         Results_ENU[key] = df_ENU
