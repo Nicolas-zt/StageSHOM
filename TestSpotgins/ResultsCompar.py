@@ -22,14 +22,38 @@ def Diff(df_dic,ref):
         
     return dic
 
-def Open(dir_path):
+def Diff_SPOTGINS(df,df_ref):
+    df = df.iloc[:,1:].to_numpy(dtype=float)
+    df_ref = df_ref.iloc[-15:,1:4].to_numpy()
+    
+    diff = np.abs(df - df_ref)
+    
+    return diff
+    
+
+def Open_IPPP(dir_path):
     dic = {}
     for (root,dirs,file) in os.walk(dir_path):
         for d in sorted(dirs):
             for f in os.listdir(root + '/' + d):
                 if f.endswith('.IPPP'):
                     path = f"{root}/{d}/{f}" 
-                    dic[d]=(pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols))
+                    df = pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols)
+                    try :
+                        dic[d] = pd.concat((dic[d],df))
+                    except:
+                        dic[d]= df
+    return dic
+
+def Open_enu(dir_path):
+    dic = {}
+    for (root,dirs,file) in os.walk(dir_path):
+        for d in sorted(dirs):
+            for f in os.listdir(root + '/' + d):
+                if f.endswith('.enu'):
+                    path = f"{root}/{d}/{f}" 
+                    df = pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,usecols = [0,1,2,3,10],names = ["MJD","E","N","U","date"])
+                    dic[f]= df
     return dic
 
 def Tri(diff_dic):
@@ -100,7 +124,7 @@ def convert(Results):
     for key in Results:
         
         df = Results[key]
-        df_date = Results[key].iloc[[0],1:3]
+
         
         array = []
         nb_row = 0
@@ -112,6 +136,7 @@ def convert(Results):
                 X = row.iloc[4]
                 Y = row.iloc[6]
                 Z = row.iloc[8]
+                date = row.iloc[1]
                 
                 for ref in refs:
                     
@@ -139,11 +164,10 @@ def convert(Results):
                         N = mat21*dX + mat22*dY + mat23*dZ
                         U = mat31*dX + mat32*dY + mat33*dZ  
                         
-                        array.append([E,N,U])
+                        array.append([date,E,N,U])
             nb_row += 1
             
-        df_ENU = pd.DataFrame(np.array(array).reshape(nb_row//3,3),columns = ["E","N","U"])
-        df_ENU = pd.concat([df_date,df_ENU],axis = 1)
+        df_ENU = pd.DataFrame(np.array(array).reshape(nb_row//3,4),columns = ["date","E","N","U"])
         
         Results_ENU[key] = df_ENU
         
@@ -158,16 +182,26 @@ if __name__ == "__main__":
     data2 = pd.read_csv("../GinsResults/ALBH00CAN_R_20250010000_01D_30S_MO.rnx.yml.260504_095248.260504_115338.gins.IPPP",comment = "#",delimiter = "\s+",header = None,names = cols)
     
     
-    ### Ouverturedes résultats Gins
-    GinsResults = Open('../GinsResults')
+    ### Ouverture des résultats Gins
+    GinsResults = Open_IPPP('../GinsResults/')
+    
+    ### Ouverture des résultats SPOTGINS
+    SPOTGINSResults = Open_enu('../GinsResults')
     
     ### Comparaison avec la ref SHOM
-    Diff_dic = Diff(GinsResults, data2)
+    # Diff_dic = Diff(GinsResults, data2)
     
     ### Export
-    d,useless = Tri(Diff_dic)
+    # d,useless = Tri(Diff_dic)
     
-    export(d,useless,"../GinsResults/Changements_calcul")
+    # export(d,useless,"../GinsResults/Changements_calcul")
 
     Gins_Results_ENU = convert(GinsResults)
+    
+    diff = []
+    diff.append(Diff_SPOTGINS(Gins_Results_ENU["ALBH_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["ALBH00CAN.enu"]))
+    diff.append(Diff_SPOTGINS(Gins_Results_ENU["CASC_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["CASC00PRT.enu"]))
+    diff.append(Diff_SPOTGINS(Gins_Results_ENU["HOB2_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["HOB200AUS.enu"]))
+    diff.append(Diff_SPOTGINS(Gins_Results_ENU["STJO_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["STJO00CAN.enu"]))
+    # diff.append(Diff_SPOTGINS(Gins_Results_ENU["zimm_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["ZIMM00CHE.enu"]))
     
