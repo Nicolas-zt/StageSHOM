@@ -1,7 +1,7 @@
 import pandas as pd 
 import numpy as np
 import os
-import re 
+import pyproj
 
 def Compar(f1,f2):
     
@@ -23,10 +23,10 @@ def Diff(df_dic,ref):
     return dic
 
 def Diff_SPOTGINS(df,df_ref):
-    df = df.iloc[:,1:].to_numpy(dtype=float)
-    df_ref = df_ref.iloc[-15:,1:4].to_numpy()
+    df = df.iloc[:,1:].astype(float)
+    df_ref = df_ref.iloc[-8:,1:4]
     
-    diff = np.abs(df - df_ref)
+    diff = abs(df.reset_index() - df_ref.reset_index()).iloc[:,1:]
     
     return diff
     
@@ -55,6 +55,48 @@ def Open_enu(dir_path):
                     df = pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,usecols = [0,1,2,3,10],names = ["MJD","E","N","U","date"])
                     dic[f]= df
     return dic
+
+def Open(dir_path,ext):
+    dic = {}
+    for (root,dirs,file) in os.walk(dir_path):
+        for d in sorted(dirs):
+            for f in os.listdir(root + '/' + d):
+                if f.endswith(f'.{ext}'):
+                    path = f"{root}/{d}/{f}" 
+                    if  ext == 'IPPP' :
+                        df = pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,names = cols)
+                        try :
+                            dic[d] = pd.concat((dic[d],df))
+                        except:
+                            dic[d]= df
+                    elif ext == 'enu':
+                        df = pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,usecols = [0,1,2,3,10],names = ["MJD","E","N","U","date"])
+                        dic[f]= df
+                    elif ext == 'txt':
+                        nom = f[:23]
+                        with open(path,'r') as f:
+                            xyz = []
+                            date = []
+                            sys = []
+                            for line in f:
+                                if line.startswith('GEOC_POS'):
+                                    xyz.append(line.split()[1:])
+                                if line.startswith('GEOD_SYS'):
+                                    date.append([line.split()[2]])
+                                    sys.append(line.split()[1])
+                            df = pd.DataFrame([date[0]+xyz[0]],columns=['Date','X','Y','Z'],dtype=float)
+                            df["SysRef"] = [sys[0]]
+                            df['Date'] = df['Date'].round(4)
+                            df['Station'] = [d]
+                            df['Nom_Rinex'] = [nom]
+                            try:
+                                Data = pd.concat((Data,df))
+                            except:
+                                Data = df
+    if ext == 'txt':
+        return Data.reset_index(drop=True)
+    else:
+        return dic
 
 def Tri(diff_dic):
     d = {}
@@ -172,7 +214,15 @@ def convert(Results):
         Results_ENU[key] = df_ENU
         
     return Results_ENU
+
+def ComparStaSHOM(df):
     
+    GRG = df[df['Station']=='GRG']
+    SPOTGINS = df.drop(df[df['Station']=='GRG'].index)
+    
+    return SPOTGINS,GRG
+
+
 if __name__ == "__main__":
     
     cols = ["# type","calendar  epoch","julian days(1950)","correction (X or lat)",
@@ -183,10 +233,13 @@ if __name__ == "__main__":
     
     
     ### Ouverture des résultats Gins
-    GinsResults = Open_IPPP('../GinsResults/')
+    GinsResults = Open('../GinsResults/','IPPP')
     
     ### Ouverture des résultats SPOTGINS
-    SPOTGINSResults = Open_enu('../GinsResults')
+    SPOTGINSResults = Open('../GinsResults','enu')
+    
+    ### Ouverture des stations SHOM
+    SHOMResults = Open('../RecalculSHOM/ComparDir','txt')
     
     ### Comparaison avec la ref SHOM
     # Diff_dic = Diff(GinsResults, data2)
@@ -196,12 +249,29 @@ if __name__ == "__main__":
     
     # export(d,useless,"../GinsResults/Changements_calcul")
 
+    #Ecarts de calcul entre la nouvelle chaine SHOM et SPOTGINS
     Gins_Results_ENU = convert(GinsResults)
-    
+    Sta = ['ALBH','CASC','HOB2','STJO']
     diff = []
-    diff.append(Diff_SPOTGINS(Gins_Results_ENU["ALBH_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["ALBH00CAN.enu"]))
-    diff.append(Diff_SPOTGINS(Gins_Results_ENU["CASC_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["CASC00PRT.enu"]))
-    diff.append(Diff_SPOTGINS(Gins_Results_ENU["HOB2_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["HOB200AUS.enu"]))
-    diff.append(Diff_SPOTGINS(Gins_Results_ENU["STJO_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["STJO00CAN.enu"]))
+    # diff.append(Diff_SPOTGINS(Gins_Results_ENU["ALBH_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["ALBH00CAN.enu"]))
+    # diff.append(Diff_SPOTGINS(Gins_Results_ENU["CASC_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["CASC00PRT.enu"]))
+    # diff.append(Diff_SPOTGINS(Gins_Results_ENU["HOB2_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["HOB200AUS.enu"]))
+    # diff.append(Diff_SPOTGINS(Gins_Results_ENU["STJO_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["STJO00CAN.enu"]))
     # diff.append(Diff_SPOTGINS(Gins_Results_ENU["zimm_Calc_15Doy"].sort_values(by="date"),SPOTGINSResults["ZIMM00CHE.enu"]))
+    # for i,d in enumerate(diff):
+    #     d.to_latex(f'{Sta[i]}.tex',index=False,header=['Ecart en Est','Ecart en Nord','Ecart en Up'])
+    # diff[0].to_latex('ZIMM.tex',index=False,header=['Ecart en Est','Ecart en Nord','Ecart en Up'])
+
+    #Ecarts de calcul entre les deux versions SHOM
+    ComparSHOM = ComparStaSHOM(SHOMResults)
     
+    All = ComparSHOM[0].join(ComparSHOM[1].set_index('Nom_Rinex'),on='Nom_Rinex',lsuffix='_SPOTGINS',rsuffix='_GRG',how='inner')
+    SHOM_Diff = abs(All.iloc[:,1:4].rename(columns={'X_SPOTGINS': 'X', 'Y_SPOTGINS': 'Y', 'Z_SPOTGINS': 'Z'})  - All.iloc[:,8:11].rename(columns={'X_GRG': 'X', 'Y_GRG': 'Y', 'Z_GRG': 'Z'}))
+    SHOM_Diff['Nom_Rinex'] = All['Nom_Rinex']
+    # SHOM_Diff.to_latex("DiffSHOM",index=False,header=['Ecart en X','Ecart en Y','Ecart en Z','Nom'],longtable=True)
+    transformer = pyproj.Transformer.from_crs(crs_from=9988,crs_to=4326,always_xy=True)
+    All['E_WGS84'],All['N_WGS84'],All['H_WGS84'] = transformer.transform(All['X_SPOTGINS'],All['Y_SPOTGINS'],All['Z_SPOTGINS'])
+    noms=[]
+    for name in All['Nom_Rinex']:
+        noms.append(name[:4])
+    All['Nom_Station']=noms
