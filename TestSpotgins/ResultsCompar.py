@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import pyproj
+import matplotlib.pyplot as plt
 
 def Compar(f1,f2):
     
@@ -76,15 +77,18 @@ def Open(dir_path,ext):
                         nom = f[:23]
                         with open(path,'r') as f:
                             xyz = []
+                            cov = []
                             date = []
                             sys = []
                             for line in f:
                                 if line.startswith('GEOC_POS'):
                                     xyz.append(line.split()[1:])
+                                if line.startswith('GEOC_COV'):
+                                    cov.append(line.split()[1:])
                                 if line.startswith('GEOD_SYS'):
                                     date.append([line.split()[2]])
                                     sys.append(line.split()[1])
-                            df = pd.DataFrame([date[0]+xyz[0]],columns=['Date','X','Y','Z'],dtype=float)
+                            df = pd.DataFrame([date[0]+xyz[0]+cov[0]],columns=['Date','X','Y','Z','vX','vY','vZ','covXY','covXZ','covYZ'],dtype=float)
                             df["SysRef"] = [sys[0]]
                             df['Date'] = df['Date'].round(4)
                             df['Station'] = [d]
@@ -222,6 +226,17 @@ def ComparStaSHOM(df):
     
     return SPOTGINS,GRG
 
+def corr(A,B):
+    EA = np.mean(A)
+    sigmaA = np.std(A)
+    EB = np.mean(B)
+    sigmaB = np.std(B)
+    covAB = EA*EB - np.mean(A*B)
+    
+    corrAB = covAB/(sigmaA*sigmaB)
+    
+    return corrAB
+
 
 if __name__ == "__main__":
     
@@ -262,16 +277,66 @@ if __name__ == "__main__":
     #     d.to_latex(f'{Sta[i]}.tex',index=False,header=['Ecart en Est','Ecart en Nord','Ecart en Up'])
     # diff[0].to_latex('ZIMM.tex',index=False,header=['Ecart en Est','Ecart en Nord','Ecart en Up'])
 
+
     #Ecarts de calcul entre les deux versions SHOM
     ComparSHOM = ComparStaSHOM(SHOMResults)
     
     All = ComparSHOM[0].join(ComparSHOM[1].set_index('Nom_Rinex'),on='Nom_Rinex',lsuffix='_SPOTGINS',rsuffix='_GRG',how='inner')
-    SHOM_Diff = abs(All.iloc[:,1:4].rename(columns={'X_SPOTGINS': 'X', 'Y_SPOTGINS': 'Y', 'Z_SPOTGINS': 'Z'})  - All.iloc[:,8:11].rename(columns={'X_GRG': 'X', 'Y_GRG': 'Y', 'Z_GRG': 'Z'}))
-    SHOM_Diff['Nom_Rinex'] = All['Nom_Rinex']
-    # SHOM_Diff.to_latex("DiffSHOM",index=False,header=['Ecart en X','Ecart en Y','Ecart en Z','Nom'],longtable=True)
-    transformer = pyproj.Transformer.from_crs(crs_from=9988,crs_to=4326,always_xy=True)
-    All['E_WGS84'],All['N_WGS84'],All['H_WGS84'] = transformer.transform(All['X_SPOTGINS'],All['Y_SPOTGINS'],All['Z_SPOTGINS'])
     noms=[]
     for name in All['Nom_Rinex']:
         noms.append(name[:4])
     All['Nom_Station']=noms
+    SHOM_Diff = abs(All.iloc[:,1:4].rename(columns={'X_SPOTGINS': 'dX', 'Y_SPOTGINS': 'dY', 'Z_SPOTGINS': 'dZ'})  - All.iloc[:,14:17].rename(columns={'X_GRG': 'dX', 'Y_GRG': 'dY', 'Z_GRG': 'dZ'}))
+    SHOM_Diff['Nom_Rinex'] = All['Nom_Rinex']
+    SHOM_Diff['Nom_Station'] = All['Nom_Station']
+    # SHOM_Diff.to_latex("DiffSHOM",index=False,header=['Ecart en X','Ecart en Y','Ecart en Z','Nom'],longtable=True)
+    transformer = pyproj.Transformer.from_crs(crs_from=9988,crs_to=4326,always_xy=True)
+    All['E_WGS84'],All['N_WGS84'],All['H_WGS84'] = transformer.transform(All['X_SPOTGINS'],All['Y_SPOTGINS'],All['Z_SPOTGINS'])
+    
+    seuil = 0.1
+    
+    n = len(SHOM_Diff)
+    milieu = n // 2
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 8))
+    
+    for ax, df in zip(
+        [ax1, ax2],
+        [SHOM_Diff.iloc[:milieu], SHOM_Diff.iloc[milieu:]]
+    ):
+    
+        x = np.arange(len(df))
+    
+        ax.plot(x, df['dX'], label='dX')
+        ax.plot(x, df['dY'], label='dY')
+        ax.plot(x, df['dZ'], label='dZ')
+    
+        mask = (
+            (df['dX'].abs() > seuil) |
+            (df['dY'].abs() > seuil) |
+            (df['dZ'].abs() > seuil)
+        )
+    
+        ax.set_xticks(np.where(mask)[0])
+        ax.set_xticklabels(
+            df.loc[mask, 'Nom_Station'],
+            rotation=45,
+            ha='right'
+        )
+    
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.show()
+    
+    #Stats
+    corrdXdY=corr(SHOM_Diff['dX'].to_numpy(),SHOM_Diff['dY'].to_numpy())
+    moydX = np.mean(SHOM_Diff['dX'].to_numpy())
+    sigmadX = np.std(SHOM_Diff['dX'].to_numpy())
+    corrdXdZ=corr(SHOM_Diff['dX'].to_numpy(),SHOM_Diff['dZ'].to_numpy())
+    moydY = np.mean(SHOM_Diff['dY'].to_numpy())
+    sigmadY = np.std(SHOM_Diff['dY'].to_numpy())
+    corrdYdZ=corr(SHOM_Diff['dY'].to_numpy(),SHOM_Diff['dZ'].to_numpy())
+    moydZ = np.mean(SHOM_Diff['dZ'].to_numpy())
+    sigmadZ = np.std(SHOM_Diff['dZ'].to_numpy())
