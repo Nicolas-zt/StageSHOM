@@ -1,0 +1,89 @@
+#!/bin/bash
+
+YEAR=$1
+DAY=$(printf "%03d" $2)  # formater le jour sur 3 chiffres
+STATION=$3
+
+echo "$STATION"
+if [[ "${STATION^^}" == "ALBH" ]] || [[ "${STATION^^}" == "CASC" ]] || [[ "${STATION^^}" == "HOB2" ]] || [[ "${STATION^^}" == "STJO" ]] || [[ "${STATION^^}" == "ZIMM" ]]
+then
+	BASE_URL="http://loading.u-strasbg.fr/SPOTGINS/TEST/rinex/"
+elif [[ "${STATION^^}" == "CMRC" ]] || [[ "${STATION^^}" == "ELOA" ]] || [[ "${STATION^^}" == "PAPO" ]] || [[ "${STATION^^}" == "TLT2" ]]
+then 
+	BASE_URL="https://gps.csn.uchile.cl/data/"
+elif [[ "${STATION^^}" == "KOHG" ]]
+then
+	BASE_URL="gnss-ftp.kasi.re.kr/kasinet/daily"
+fi
+
+RNX2=".Z"
+RNX3=".crx.gz"
+OUTPUT_DIR="./rinex/${DAY}/"
+
+mkdir -p "$OUTPUT_DIR"
+
+URL_DAY="${BASE_URL}${YEAR}/${DAY}/"
+
+echo "Lecture : $URL_DAY"
+
+if [[ "${STATION^^}" == "KOHG" ]]
+then 
+	wget -O- gnss-ftp.kasi.re.kr/kasinet/daily/$DAY/$YEAR/20o/KOHG*
+fi
+# Récupérer tous les liens de fichiers .crx.gz ou .Z
+ALL_LINKS=$(wget -qO- "$URL_DAY" | sed -n 's/.*href="\([^"]*\)".*/\1/p' | grep -E "(${RNX2}|${RNX3})$")
+
+if [ -z "$ALL_LINKS" ]; then
+	sleep 5
+	ALL_LINKS=$(wget -qO- "$URL_DAY" | sed -n 's/.*href="\([^"]*\)".*/\1/p' | grep -E "(${RNX2}|${RNX3})$")
+	if [ -z "$ALL_LINKS" ]; then
+		echo "Aucun fichier trouvé"
+		exit 1
+	fi
+fi
+
+echo "$(echo "$ALL_LINKS" | wc -l) fichiers trouvés"
+
+# Tableau pour mémoriser les stations déjà présentes avec .crx.gz
+declare -A STATIONS
+
+# Première passe : repérer les .crx.gz
+for F in $ALL_LINKS; do
+    if [[ "$F" == *"$RNX3" ]]; then
+        STA=${F:0:4}
+        STATIONS[$STA]=1
+    fi
+done
+
+# Deuxième passe : téléchargement
+for F in $ALL_LINKS; do
+    NOM=$(basename "$F")
+    CHEMIN="${OUTPUT_DIR}${NOM}"
+    STA=${NOM:0:4}
+
+	# Télécharger uniquement la station demandée
+	if [[ ${STA^^} == ${STATION^^} ]]; then
+		
+		echo "Station trouvée : $STA"
+		# Ignorer .Z si .crx.gz existe pour la même station
+		if [[ "$F" == *"$RNX2" ]] && [[ ${STATIONS[$STA]} ]]; then
+			echo "Ignoré (déjà existant en .crx.gz) : $NOM"
+			continue
+		fi
+
+		# Vérifier si le fichier existe déjà
+		if [ -f "${CHEMIN%.Z}" ] || [ -f "${CHEMIN%.crx.gz}" ]; then
+			echo "Déjà présent : $NOM"
+			continue
+		fi
+
+		echo "Téléchargement : $NOM"
+		wget -O "$CHEMIN" "${URL_DAY}${F}"
+		if [ ! -f "${CHEMIN%.Z}" ] && [ ! -f "${CHEMIN%.crx.gz}" ]; then
+			sleep 5
+			wget -O "$CHEMIN" "${URL_DAY}${F}"
+		fi
+	fi
+done
+
+echo "Téléchargement terminé."

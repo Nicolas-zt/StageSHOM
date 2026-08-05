@@ -1,0 +1,32 @@
+#!/bin/bash
+
+
+YEAR=$1
+DOY=$2
+STATION=$3
+PROJECT=$4
+
+DOY_FMT=$(printf "%03d" $DOY)
+
+echo "================================="
+echo "YEAR=$YEAR DOY=$DOY_FMT"
+echo "================================="
+
+rm -rf rinex/$DOY_FMT
+
+./GetRnx $YEAR $DOY $STATION
+
+for file in ./rinex/$DOY_FMT/*
+do
+	gi_process_gins -f $file -p grg -q grg -o OFF -O static30s -C-GE -m GE -S ON
+done
+
+if [ -d ./result/$PROJECT ]
+then
+    mv ./result/*.IPPP* ./result/$PROJECT
+else
+    mkdir ./result/$PROJECT
+    mv ./result/*.IPPP* ./result/$PROJECT
+fi
+
+rm -rf rinex/$DOY_FMT
