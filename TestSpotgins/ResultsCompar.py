@@ -78,7 +78,7 @@ def Open(dir_path,ext):
                         except:
                             dic[d]= df
                     elif ext == 'enu':
-                        df = pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,usecols = [0,1,2,3,11],names = ["MJD","E","N","U","date"])
+                        df = pd.read_csv(path,comment = "#",delimiter = "\s+",header = None,usecols = [0,1,2,3,4,5,6,11],names = ["MJD","E","N","U","SE","SN","SU","Date"])
                         dic[f]= df
                     elif ext == 'txt':
                         patterns = [
@@ -1031,9 +1031,10 @@ if __name__ == "__main__":
     # fig.suptitle('Séries temporelles de la station FUN100PRT')
     # plt.show()
     
-    SHOM_NGL()
-    MC_saisonnier(NGLResults["TORK_NGL.xyz"],corrected=False)
-    MC_saisonnier(NGLResults["TORK_NGL.xyz"],corrected=True)
+    # SHOM_NGL()
+    MC_saisonnier(SPOTGINSResults["TORK00AUS.enu"],corrected=False)
+    MC_saisonnier(SPOTGINSResults["TORK00AUS.enu"],corrected=True)
     
-    MC_saisonnier(NGLResults["WBOL_NGL.xyz"],chgmt_antenne=[2024.197],corrected=False)
-    MC_saisonnier(NGLResults["WBOL_NGL.xyz"],chgmt_antenne=[2024.197],corrected=True)
+    # MC_saisonnier(NGLResults["WBOL_NGL.xyz"],chgmt_antenne=[2024.197],corrected=False)
+    # MC_saisonnier(NGLResults["WBOL_NGL.xyz"],chgmt_antenne=[2024.197],corrected=True)
+    
