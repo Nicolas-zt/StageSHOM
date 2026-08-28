@@ -1,7 +1,20 @@
-\begin{tabular}{rrrl}
+\begin{longtable}{rrrl}
 \toprule
 Ecart en X & Ecart en Y & Ecart en Z &                     Nom \\
 \midrule
+\endfirsthead
+
+\toprule
+Ecart en X & Ecart en Y & Ecart en Z &                     Nom \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{{Continued on next page}} \\
+\midrule
+\endfoot
+
+\bottomrule
+\endlastfoot
      0.004 &      0.101 &      0.015 & RKD400FRA\_R\_20230260000 \\
      0.106 &      0.254 &      0.094 & RKD400FRA\_R\_20230280000 \\
      0.003 &      0.011 &      0.004 & NUMB00FRA\_R\_20230460000 \\
@@ -188,5 +201,4 @@ Ecart en X & Ecart en Y & Ecart en Z &                     Nom \\
      0.014 &      0.008 &      0.007 & RepD00000\_R\_20260850000 \\
      0.003 &      0.003 &      0.011 & REPW00000\_R\_20261050000 \\
      0.002 &      0.023 &      0.002 & REPW00000\_R\_20261060000 \\
-\bottomrule
-\end{tabular}
+\end{longtable}
