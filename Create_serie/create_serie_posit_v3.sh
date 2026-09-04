@@ -98,13 +98,13 @@ if [[ ! ${name} =~ ^[A-Z,0-9]{4}[0-9]{2}[A-Z]{3}$ ]]; then
 	echo ""
 	print_usage
 fi
-stations_dir="${SPOTGINS_DIR}/station"
-scripts_dir="${POSPRECIS_PATH}/SCRIPTS_SPOTGINS/COMMUN/python"
-series_dir="${SPOTGINS_DIR}/series"
-listing_dir="${SPOTGINS_DIR}/listing/${name:0:4}"
-stats_dir="${SPOTGINS_DIR}/statistiques/${name:0:4}"
-solution_dir="${SPOTGINS_DIR}/result/TORK_test/Corrected"
-log_file="${SPOTGINS_DIR}/series/serie.log"
+stations_dir="./"
+scripts_dir="./"
+series_dir="./"
+listing_dir="./"
+stats_dir="./"
+solution_dir="../WBOL_test"
+#log_file="${SPOTGINS_DIR}/series/serie.log"
 file_sol="${series_dir}/${name}.enu"
 mkdir -p ${series_dir}
 rm $log_file
@@ -212,87 +212,87 @@ date_of_exe=()
 version_gins=()
 version_prairie=()
 constel=()
-while read epoch1 epoch2; do
-	echo "${epoch1} ${epoch2}"
-	year=$(echo $epoch1 | awk -F_ '{ print $1 }')
-	doy=$(echo $epoch1 | awk -F_ '{ print $2 }')
-	file_listing=$(find ${listing_dir} \( -name "*${name}_${epoch1}*${epoch2}*.gins" \))
-	file_stat=$(find ${stats_dir} \( -name "*${name}_${epoch1}*${epoch2}.gins.0" \))
-	#file_prairie=$(find ${listing_dir} \( -name "*${name}_${epoch1}*.prairie" \)) 
-	if [ ! -z ${file_listing} ] && [ ! -z ${file_stat} ]; then
-	#if [ ! -z ${file_stat} ] ; then
-		range=$(awk '{ print $2 }' ${file_stat} | sed -n '1p;$p' | paste -sd ' ' | awk '{ print $2-$1 }')
-		epochs=$(awk '{ print $2 }' ${file_stat} | sort -n | uniq | wc -l)
-		# check for duration of tracking
-		flag_duration=$(echo $range $epochs | awk '{ if ( ($1 > 0.5) && ($2 > 144) ) print 0; else print 2 }')
-		if [[ $flag_duration -ne 0 ]]; then
-			echo -e "Flag durée de mesure : ${flag_duration} ${file_stat}\n" >> $log_file
-		fi
-		# check for calibrated antenna (only for 25_1 and earlier)
-		flag_antex1=$(grep "(G-lec_affecte_antex14" ${file_listing} | grep station | wc -l | awk '{ if ($1 > 0) print 1; else print 0 }')
-		if [[ $flag_antex1 -ne 0 ]]; then
-			echo -e "Flag 1 calibration antenne : ${flag_antex1} ${file_listing}\n" >> $log_file 
-		fi
-		# check for calibrated frequency (only for 25_1 and earlier)
-		flag_antex2=$(grep "(G-antex_orig_mod) " ${file_listing} | grep GPS12 | wc -l | awk '{ if ($1 > 1) print 1; else print 0 }')
-		if [[ $flag_antex2 -ne 0 ]]; then
-			echo -e "Flag 2 calibration antenne : ${flag_antex2} ${file_listing}\n" >> $log_file 
-		fi
-		# check for calibrated radome
-		flag_antex3_v25_1=$(grep "(G-lec_affecte_antex) :" ${file_listing} | grep radome | wc -l | awk '{ if ($1 > 0) print 1; else print 0 }')
-		flag_antex3_v25_2=$(grep "(G-gestion_antex_mod) : remplacement du type de radome par NONE pour antenne" ${file_listing} | wc -l | awk '{ if ($1 > 0) print 1; else print 0 }')
-		flag_antex3=$(echo $flag_antex3_v25_1 $flag_antex3_v25_2 | awk '{ if ($1+$2 > 0) print 1; else print 0 }')
-		if [[ $flag_antex3 -ne 0 ]]; then
-			echo -e "Flag 3 calibration antenne : ${flag_antex3} ${file_listing}\n" >> $log_file 
-		fi
-		# summary of antex flag
-		flag_antex=$(echo $flag_antex1 $flag_antex2 $flag_antex3 | awk '{ if ($1+$2+$3 > 0) print 1; else print 0 }')
-		if [[ $flag_antex -ne $flag_antex3 ]]; then
-			echo -e "Flag antex 25_1 non nul : ${flag_antex} ${flag_antex3} ${file_listing}\n" >> $log_file
-		fi 
-		if [[ $flag_antex -ne 0 ]]; then
-			echo -e "Flag antex total : ${flag_antex} ${file_listing}\n" >> $log_file
-		fi 
-		# check for fixed ambiguities
-		flag_fixAmbis=$(grep -A10 " GPh      GRa     GBlo " ${file_listing} | grep " 5: " | awk '{ if ( (($6 > 0) && ($6 < 80)) || (($18 > 0) && ($18 < 80)) ) print 4; else print 0 }')
-		if [[ $flag_fixAmbis -ne 0 ]]; then
-			echo -e "Flag 4 fixation ambiguïtés : ${flag_fixAmbis} ${file_listing}\n" >> $log_file 
-		fi
-		Qflag+=$(echo $flag_antex $flag_duration $flag_fixAmbis | awk '{ printf "\n%d\n", $1 + $2 + $3 }')
-		#echo -e "FLAG TOTAL : ${epoch1} ${Qflag} ${flax_antex}" >> $log_file
-		# Constellation
-        pres_gps=$(grep -m 1 "RAPH_GPS:CC" ${file_listing} | wc -l)
-        pres_gal=$(grep -m 1 "RAPH_GAL:CC" ${file_listing} | wc -l)
-        const=""
-        if [[ "$pres_gps" -eq 1 ]]; then
-            const="G"
-            if [[ ! $const_head == "G"* ]]; then
-                const_head="G${const_head}"
-            fi
-        fi
-        if [[ "$pres_gal" -eq 1 ]]; then
-            const="${const}E"
-
-           if [[ ! $const_head == *"E" ]]; then
-               const_head="${const_head}E"
-           fi
-        fi
-        constel+=$(printf "\n${const}\n")
-
-		version_gins+=$(out=$(grep -m 1 "#GINS_VERSION" ${solution_dir}/*${name}_${epoch1}*${epoch2}.gins.IPPP 2> /dev/null); echo $out | awk '{print ($0 ? $2 : "Unknown")}' | xargs printf "\n%s\n")
-		#version_prairie+=$(out=$(grep -m 1 "Prog is prairie" ${file_listing} 2> /dev/null); echo $out | awk '{print ($5 ? $5 : "Unknown")}' | xargs printf "\n%s\n")
-		#version_prairie+=$(out=$(grep -m 1 'PRAIRIE\.v' "${file_prairie}" 2> /dev/null | sed -E 's/.*PRAIRIE\.(v[0-9]{2}).*/\1/'); echo $out | awk '{print ($1 ? $1 : "Unknown")}' | xargs printf "\n%s\n")
-		date_of_exe+=$(echo "${file_listing}" | awk 'NR==1 {print $NF}' | rev | cut -c6-18 | rev | xargs printf "\n%s\n")
-	else
-		echo Missing listing and/or statistics file for ${name}_${year}_${doy}
-		Qflag+=$(echo NA | xargs printf "\n%s\n")
-		constel+=$(echo NA | xargs printf "\n%s\n")
-		version_gins+=$(echo NA | xargs printf "\n%s\n")
-		version_prairie+=$(echo NA | xargs printf "\n%s\n")
-		date_of_exe+=$(echo NA | xargs printf "\n%s\n")
-	fi
-done < ${file_sol}.files.$rand
-echo "Fin traitement listings"
+#while read epoch1 epoch2; do
+#	echo "${epoch1} ${epoch2}"
+#	year=$(echo $epoch1 | awk -F_ '{ print $1 }')
+#	doy=$(echo $epoch1 | awk -F_ '{ print $2 }')
+#	file_listing=$(find ${listing_dir} \( -name "*${name}_${epoch1}*${epoch2}*.gins" \))
+#	file_stat=$(find ${stats_dir} \( -name "*${name}_${epoch1}*${epoch2}.gins.0" \))
+#	#file_prairie=$(find ${listing_dir} \( -name "*${name}_${epoch1}*.prairie" \)) 
+#	if [ ! -z ${file_listing} ] && [ ! -z ${file_stat} ]; then
+#	#if [ ! -z ${file_stat} ] ; then
+#		range=$(awk '{ print $2 }' ${file_stat} | sed -n '1p;$p' | paste -sd ' ' | awk '{ print $2-$1 }')
+#		epochs=$(awk '{ print $2 }' ${file_stat} | sort -n | uniq | wc -l)
+#		# check for duration of tracking
+#		flag_duration=$(echo $range $epochs | awk '{ if ( ($1 > 0.5) && ($2 > 144) ) print 0; else print 2 }')
+#		if [[ $flag_duration -ne 0 ]]; then
+#			echo -e "Flag durée de mesure : ${flag_duration} ${file_stat}\n" >> $log_file
+#		fi
+#		# check for calibrated antenna (only for 25_1 and earlier)
+#		flag_antex1=$(grep "(G-lec_affecte_antex14" ${file_listing} | grep station | wc -l | awk '{ if ($1 > 0) print 1; else print 0 }')
+#		if [[ $flag_antex1 -ne 0 ]]; then
+#			echo -e "Flag 1 calibration antenne : ${flag_antex1} ${file_listing}\n" >> $log_file 
+#		fi
+#		# check for calibrated frequency (only for 25_1 and earlier)
+#		flag_antex2=$(grep "(G-antex_orig_mod) " ${file_listing} | grep GPS12 | wc -l | awk '{ if ($1 > 1) print 1; else print 0 }')
+#		if [[ $flag_antex2 -ne 0 ]]; then
+#			echo -e "Flag 2 calibration antenne : ${flag_antex2} ${file_listing}\n" >> $log_file 
+#		fi
+#		# check for calibrated radome
+#		flag_antex3_v25_1=$(grep "(G-lec_affecte_antex) :" ${file_listing} | grep radome | wc -l | awk '{ if ($1 > 0) print 1; else print 0 }')
+#		flag_antex3_v25_2=$(grep "(G-gestion_antex_mod) : remplacement du type de radome par NONE pour antenne" ${file_listing} | wc -l | awk '{ if ($1 > 0) print 1; else print 0 }')
+#		flag_antex3=$(echo $flag_antex3_v25_1 $flag_antex3_v25_2 | awk '{ if ($1+$2 > 0) print 1; else print 0 }')
+#		if [[ $flag_antex3 -ne 0 ]]; then
+#			echo -e "Flag 3 calibration antenne : ${flag_antex3} ${file_listing}\n" >> $log_file 
+#		fi
+#		# summary of antex flag
+#		flag_antex=$(echo $flag_antex1 $flag_antex2 $flag_antex3 | awk '{ if ($1+$2+$3 > 0) print 1; else print 0 }')
+#		if [[ $flag_antex -ne $flag_antex3 ]]; then
+#			echo -e "Flag antex 25_1 non nul : ${flag_antex} ${flag_antex3} ${file_listing}\n" >> $log_file
+#		fi 
+#		if [[ $flag_antex -ne 0 ]]; then
+#			echo -e "Flag antex total : ${flag_antex} ${file_listing}\n" >> $log_file
+#		fi 
+#		# check for fixed ambiguities
+#		flag_fixAmbis=$(grep -A10 " GPh      GRa     GBlo " ${file_listing} | grep " 5: " | awk '{ if ( (($6 > 0) && ($6 < 80)) || (($18 > 0) && ($18 < 80)) ) print 4; else print 0 }')
+#		if [[ $flag_fixAmbis -ne 0 ]]; then
+#			echo -e "Flag 4 fixation ambiguïtés : ${flag_fixAmbis} ${file_listing}\n" >> $log_file 
+#		fi
+#		Qflag+=$(echo $flag_antex $flag_duration $flag_fixAmbis | awk '{ printf "\n%d\n", $1 + $2 + $3 }')
+#		#echo -e "FLAG TOTAL : ${epoch1} ${Qflag} ${flax_antex}" >> $log_file
+#		# Constellation
+#        pres_gps=$(grep -m 1 "RAPH_GPS:CC" ${file_listing} | wc -l)
+#        pres_gal=$(grep -m 1 "RAPH_GAL:CC" ${file_listing} | wc -l)
+#        const=""
+#        if [[ "$pres_gps" -eq 1 ]]; then
+#            const="G"
+#            if [[ ! $const_head == "G"* ]]; then
+#                const_head="G${const_head}"
+#            fi
+#        fi
+#        if [[ "$pres_gal" -eq 1 ]]; then
+#            const="${const}E"
+#
+#           if [[ ! $const_head == *"E" ]]; then
+#               const_head="${const_head}E"
+#           fi
+#        fi
+#        constel+=$(printf "\n${const}\n")
+#
+#		version_gins+=$(out=$(grep -m 1 "#GINS_VERSION" ${solution_dir}/*${name}_${epoch1}*${epoch2}.gins.IPPP 2> /dev/null); echo $out | awk '{print ($0 ? $2 : "Unknown")}' | xargs printf "\n%s\n")
+#		#version_prairie+=$(out=$(grep -m 1 "Prog is prairie" ${file_listing} 2> /dev/null); echo $out | awk '{print ($5 ? $5 : "Unknown")}' | xargs printf "\n%s\n")
+#		#version_prairie+=$(out=$(grep -m 1 'PRAIRIE\.v' "${file_prairie}" 2> /dev/null | sed -E 's/.*PRAIRIE\.(v[0-9]{2}).*/\1/'); echo $out | awk '{print ($1 ? $1 : "Unknown")}' | xargs printf "\n%s\n")
+#		date_of_exe+=$(echo "${file_listing}" | awk 'NR==1 {print $NF}' | rev | cut -c6-18 | rev | xargs printf "\n%s\n")
+#	else
+#		echo Missing listing and/or statistics file for ${name}_${year}_${doy}
+#		Qflag+=$(echo NA | xargs printf "\n%s\n")
+#		constel+=$(echo NA | xargs printf "\n%s\n")
+#		version_gins+=$(echo NA | xargs printf "\n%s\n")
+#		version_prairie+=$(echo NA | xargs printf "\n%s\n")
+#		date_of_exe+=$(echo NA | xargs printf "\n%s\n")
+#	fi
+#done < ${file_sol}.files.$rand
+#echo "Fin traitement listings"
 
 ###################################################
 # MERGING ALL THE DATA COLUMNS INTO THE SERIES FILE
