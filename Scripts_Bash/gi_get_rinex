@@ -1,0 +1,195 @@
+#!/bin/bash
+
+source $GINS_BIN_PATH/gi_tools
+
+################
+# Initialisation
+certif="/var/tmp/Olfeo_SHOM_SSL.crt"
+RNX2=".Z"
+RNX3=".crx.gz"
+
+
+Usage ()
+{
+	echo
+	echo -e "\t-y\tYear : Annee du Rinex a telecharger"
+	echo 
+	echo -e "\t-d\tDay : Doy du Rinex a telecharger"
+	echo 
+	echo -e "\t-s\tStation : Station a traiter"
+	exit
+}
+
+#######################
+# Parsage des arguments
+while getopts :hy:d:s: Opt
+do
+	case $Opt in 
+	(h)
+		Usage
+	;;
+	(y)
+		YEAR=$OPTARG
+	;;
+	(d)
+		DAY=$(printf "%03d" $OPTARG)
+	;;
+	(s)
+		STATION=$OPTARG
+	;;
+	(\?)
+		Erreur "Option invalide '-$OPTARG'"
+		Usage
+	;;
+	(:)
+		Erreur "L'option '-$OPTARG' requiert un argument"
+		Usage
+	;;
+	(*)
+		Erreur "Erreur inconnue."
+		Usage
+	;;
+	esac
+done
+
+echo "$YEAR"
+echo "$DAY"
+echo "$STATION"
+
+if [ -z "$YEAR" ] || [ -z "$DAY" ] || [ -z "$STATION" ]; then
+    echo "Erreur : -y, -d et -s sont obligatoires."
+    Usage
+fi
+
+echo "$STATION"
+
+#Serveur EOST
+if [[ "${STATION^^}" == "ALBH00CAN" ]] || [[ "${STATION^^}" == "CASC00PRT" ]] || [[ "${STATION^^}" == "HOB200AUS" ]] || [[ "${STATION^^}" == "STJO00CAN" ]] || [[ "${STATION^^}" == "ZIMM00CHE" ]]
+then
+	BASE_URL="http://loading.u-strasbg.fr/SPOTGINS/TEST/rinex/"
+	
+#Serveur Chili
+elif [[ "${STATION^^}" == "CMRC00CHL" ]] || [[ "${STATION^^}" == "ELOA00CHL" ]] || [[ "${STATION^^}" == "PAPO00CHL" ]] || [[ "${STATION^^}" == "TLT200CHL" ]]
+then 
+	BASE_URL="https://gps.csn.uchile.cl/data/"
+	
+#Serveur Corée
+elif [[ "${STATION^^}" == "KOHG00KOR" ]]
+then
+	BASE_URL="ftp://gnss-ftp.kasi.re.kr/kasinet/daily/"
+	
+#Serveur UNAVCO
+elif [[ "${STATION^^}" == "PABH00USA" ]]
+then
+	BASE_URL="https://data.earthscope.org/archive/gnss/rinex/obs"
+	
+#Serveur EPOS
+elif [[ "${STATION^^}" == "FUN100PRT" ]] || [[ "${STATION^^}" == "LARE00ESP" ]] || [[ "${STATION^^}" == "LIZ100GBR" ]] || [[ "${STATION^^}" == "LIZD00GBR" ]] || [[ "${STATION^^}" == "PORT00GBR" ]] || [[ "${STATION^^}" == "NARG00GBR" ]] || [[ "${STATION^^}" == "NFO100GBR" ]]
+then
+	BASE_URL="https://datacenter.epos.ubi.pt/RINEX3/30s/"
+
+#Serveur Australie
+elif [[ "${STATION^^}" == "TORK00AUS" ]] || [[ "${STATION^^}" == "WBOL00AUS" ]]
+then
+	BASE_URL="https://ga-gnss-data-rinex-v1.s3.amazonaws.com/public/daily/"
+
+fi
+
+OUTPUT_DIR="./rinex/${DAY}/"
+
+mkdir -p "$OUTPUT_DIR"
+
+URL_DAY="${BASE_URL}${YEAR}/${DAY}/"
+
+echo "Lecture : $URL_DAY"
+
+if [[ "${STATION^^}" == "PABH00USA" ]]
+then 
+	wget -N -r -l3 -np -nd -erobots=off --reject="tmp,index.html*" -A "PABH*" $URL_DAY --header "Authorization: Bearer $(es user get-access-token)"
+elif [[ "${STATION^^}" == "KOHG00KOR" ]]
+then 
+	wget --ca-certificate=$certif "$URL_DAY"20o/KOHG*
+
+elif [[ "${STATION^^}" == "TORK00AUS" ]]
+then
+	
+	if wget --ca-certificate=$certif -O "${OUTPUT_DIR}TORK00AUS_R_${YEAR}${DAY}0000_01D_30S_MO.crx.gz" "$BASE_URL${YEAR}/${DAY}/TORK00AUS_R_${YEAR}${DAY}0000_01D_30S_MO.crx.gz"
+	then
+		echo "ok"
+	else
+		wget --ca-certificate=$certif -O "${OUTPUT_DIR}TORK${DAY}0.${YEAR: -2}d.gz" "$BASE_URL${YEAR}/${DAY}/tork${DAY}0.${YEAR: -2}d.gz"
+	fi
+	echo "$BASE_URL${YEAR}/${DAY}/tork${DAY}0.${YEAR: -2}d.gz"
+	
+elif [[ "${STATION^^}" == "WBOL00AUS" ]]
+then
+	
+	if wget --ca-certificate=$certif -O "${OUTPUT_DIR}WBOL00AUS_S_${YEAR}${DAY}0000_01D_30S_MO.crx.gz" "$BASE_URL${YEAR}/${DAY}/WBOL00AUS_S_${YEAR}${DAY}0000_01D_30S_MO.crx.gz"
+	then
+		echo "ok"
+	else
+		wget --ca-certificate=$certif -O "${OUTPUT_DIR}wbol${DAY}0.${YEAR: -2}d.gz" "$BASE_URL${YEAR}/${DAY}/wbol${DAY}0.${YEAR: -2}d.gz"
+	fi
+	echo "$BASE_URL${YEAR}/${DAY}/wbol${DAY}0.${YEAR: -2}d.gz"
+	
+	
+	
+	
+else
+	# Récupérer tous les liens de fichiers RINEX 2 ou RINEX 3
+	ALL_LINKS=$(wget  --ca-certificate=$certif -O- "$URL_DAY" | sed -n 's/.*href="\([^"]*\)".*/\1/p' | grep -E "(${RNX2}|${RNX3})$")
+	echo "$URL_DAY"
+	if [ -z "$ALL_LINKS" ]; then
+		sleep 5
+		ALL_LINKS=$(wget  --ca-certificate=$certif -O- "$URL_DAY" | sed -n 's/.*href="\([^"]*\)".*/\1/p' | grep -E "(${RNX2}|${RNX3})$")
+		if [ -z "$ALL_LINKS" ]; then
+			echo "Aucun fichier trouvé"
+			exit 1
+		fi
+	fi
+
+	echo "$(echo "$ALL_LINKS" | wc -l) fichiers trouvés"
+
+	# Tableau pour mémoriser les stations déjà présentes en RINEX 3
+	declare -A STATIONS
+
+	# Première passe : repérer les RINEX 3
+	for F in $ALL_LINKS; do
+		if [[ "$F" == *"$RNX3" ]]; then
+			STA=${F:0:9}
+			STATIONS[$STA]=1
+		fi
+	done
+
+	# Deuxième passe : téléchargement
+	for F in $ALL_LINKS; do
+		NOM=$(basename "$F")
+		CHEMIN="${OUTPUT_DIR}${NOM}"
+		STA=${NOM:0:9}
+
+		# Télécharger uniquement la station demandée
+		if [[ ${STA^^} == ${STATION^^} ]]; then
+			
+			echo "Station trouvée : $STA"
+			# Recupere uniquement les RINEX 3 si disponibles
+			if [[ "$F" == *"$RNX2" ]] && [[ ${STATIONS[$STA]} ]]; then
+				echo "Ignoré (déjà existant en .crx.gz) : $NOM"
+				continue
+			fi
+
+			# Vérifier si le fichier existe déjà
+			if [ -f "${CHEMIN%.Z}" ] || [ -f "${CHEMIN%.crx.gz}" ]; then
+				echo "Déjà présent : $NOM"
+				continue
+			fi
+
+			echo "Téléchargement : $NOM"
+			wget -S   --ca-certificate=$certif -O "$CHEMIN" "${URL_DAY}${F}"
+			if [ ! -f "${CHEMIN%.Z}" ] && [ ! -f "${CHEMIN%.crx.gz}" ]; then
+				sleep 5
+				wget   --ca-certificate=$certif  -O "$CHEMIN" "${URL_DAY}${F}"
+			fi
+		fi
+	done
+fi
+echo "Téléchargement terminé."

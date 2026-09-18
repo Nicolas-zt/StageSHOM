@@ -1,0 +1,191 @@
+#!/bin/bash
+
+source $GINS_BIN_PATH/gi_tools
+
+Usage ()
+{
+	echo
+	echo -e "\t-Y\tYEAR_START : Annee de debut de la serie a traiter"
+	echo
+	echo -e "\t-y\tYEAR_END : Annee de fin de la serie a traiter"
+	echo 
+	echo -e "\t-D\tDOY_START : Doy de debut de la serie a traiter"
+	echo 
+	echo -e "\t-d\tDOY_END : Doy de fin de la serie a traiter"
+	echo 
+	echo -e "\t-s\tStation : Station a traiter"
+	echo
+	echo -e "\t-p\tProject : Nom du dossier d'enregistrement des résultats"
+	echo
+	echo -e "\t-t\tTestGINS : Option pour lancer le TestGINS de validation SPOTGINS, remplace toutes les autres options"
+	echo
+	echo -e "\t-P\tPosit : Option pour lancer la génération de la série de position à la suite du calcul"
+	echo 
+	echo -e "\t-T\tTropo : Option pour lancer la génération de la série tropo à la suite du calcul"
+	echo
+	echo -e "\t-C\tCheck : Option pour ne traiter que les jours absents du projet"
+	exit
+}
+
+#######################
+# Parsage des arguments
+while getopts :hY:y:D:d:s:p:tPTC Opt
+do
+	case $Opt in 
+	(h)
+		Usage
+	;;
+	(Y)
+		YEAR_START=$OPTARG
+	;;
+	(y)
+		YEAR_END=$OPTARG
+	;;
+	(D)
+		DOY_START=$(printf "%03d" $OPTARG)
+	;;
+	(d)
+		DOY_END=$(printf "%03d" $OPTARG)
+	;;
+	(s)
+		STATIONS=$OPTARG
+	;;
+	(p)
+		PROJECT=$OPTARG
+	;;
+	(t)
+		TestGINS=ON
+	;;
+	(P)
+		Posit==ON
+	;;
+	(T)
+		Tropo=ON
+	;;
+	(C)
+		Check=ON
+	;;
+	(\?)
+		Erreur "Option invalide '-$OPTARG'"
+		Usage
+	;;
+	(:)
+		Erreur "L'option '-$OPTARG' requiert un argument"
+		Usage
+	;;
+	(*)
+		Erreur "Erreur inconnue."
+		Usage
+	;;
+	esac
+done
+
+# Critères du testGINS
+if [[ "$TestGINS" == "ON" ]]
+then 
+	echo "ok"
+	YEAR_START=2005
+	YEAR_END=2024
+	
+	DOY_START=001
+	DOY_END=366
+	
+	STATIONS=("ALBH" "CASC" "HOB2" "STJO" "ZIMM")
+	
+	Posit="ON"
+	Tropo="ON"
+
+elif [ -z "$YEAR_START" ] || [ -z "$YEAR_END" ] || [ -z "$DOY_START" ] || [ -z "$DOY_END" ] || [ -z "$STATIONS" ] || [ -z "$PROJECT" ]
+then
+	echo "Des options obligtoires sont manquantes"
+fi
+
+Process_DOY() {
+
+	YEAR=$1
+	DOY=$2
+	STATION=$3
+	PROJECT=$4
+
+	DOY_FMT=$(printf "%03d" $DOY)
+
+	echo "================================="
+	echo "YEAR=$YEAR DOY=$DOY_FMT"
+	echo "================================="
+
+	# Telechargement du Rinex a traiter
+	gi_get_rinex -y $YEAR -d $DOY -s $STATION
+
+	for file in ./rinex/$DOY_FMT/*
+	do
+		gi_process_gins -f $file -p grg -q grg -o ON -O static30s -C-GE -m GE -S OFF
+	done
+
+	#Déplacement des résultats
+	if [ -d ./result/$PROJECT ]
+	then
+		mv ./result/*.IPPP* ./result/$PROJECT
+	else
+		mkdir ./result/$PROJECT
+		mv ./result/*.IPPP* ./result/$PROJECT
+	fi
+
+	#Déplacement des fichiers de création des séries
+	if [ -d ./listing/$STATION ]
+	then	
+		mv ./listing/$STATION*.gins ./listing/$STATION
+	else
+		mkdir ./listing/$PROJECT
+		mv ./listing/$STATION*.gins ./listing/$PROJECT
+	fi
+
+	if [ -d ./statistiques/$STATION ]
+	then	
+		mv ./statistiques/$STATION*.gins.0 ./statistiques/$STATION
+	else
+		mkdir ./statistiques/$PROJECT
+		mv ./statistiques/$STATION*.gins.0 ./statistiques/$PROJECT
+	fi
+
+	rm -rf rinex/$DOY_FMT
+}
+
+export -f Process_DOY
+
+
+for STATION in "$STATIONS"
+do
+	for YEAR in $(seq $YEAR_START $YEAR_END)
+	do
+		for DOY in $(seq $DOY_START $DOY_END)
+		do
+			if [[ $Check == "ON" ]]
+			then 
+				if [[ -f ./result/$PROJECT/*${YEAR}_${DOY}* ]]
+				then 
+					process=False
+				else
+					process=True
+				fi
+			else
+				process=True
+			fi
+		if [[ $process == "True" ]] 
+		then
+			timeout --foreground 5m bash -c 'Process_DOY "$@"' bash "$YEAR" "$DOY" "$STATION" "$PROJECT"
+		fi
+		done
+
+	done
+	
+	if [[ $Posit == "ON" ]]
+	then 
+		gi_create_serie_posit_v3 -name $STATION -ac SHOM -project $PROJECT
+	fi
+	
+	if [[ $Tropo == "ON" ]]
+	then 
+		gi_create_serie_tropo_v2 -name $STATION -project $PROJECT
+	fi
+done
+
